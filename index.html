@@ -4,6 +4,7 @@
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>Shehab. Design Portfolio</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%2064%2064'%3E%3Crect%20width='64'%20height='64'%20rx='14'%20fill='%23000'/%3E%3Ctext%20x='32'%20y='46'%20font-family='Inter,sans-serif'%20font-size='40'%20font-weight='600'%20fill='%23f2f2ef'%20text-anchor='middle'%3ES%3C/text%3E%3C/svg%3E" />
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400..700&display=swap" />
@@ -767,7 +768,7 @@
   </div>
 </div>
 
-<!-- ── Tweaks panel markup ───────────────────────────────── -->
+<!-- ── Resume pane ───────────────────────────────────────── -->
 <div id="resume-pane" role="dialog" aria-modal="false" aria-label="Resume">
   <div class="pane-bar">
     <a class="pane-btn" id="resume-download" href="uploads/Resume.pdf" download="Shehab-Resume.pdf">Download</a>
@@ -918,23 +919,10 @@
 (() => {
   const pane = document.getElementById('resume-pane');
   const frame = document.getElementById('resume-frame');
-  const dl = document.getElementById('resume-download');
-  let blobUrl = null;
-  async function getBlobUrl() {
-    if (blobUrl) return blobUrl;
-    const r = await fetch('uploads/Resume.pdf');
-    const b = await r.blob();
-    blobUrl = URL.createObjectURL(new Blob([b], { type: 'application/pdf' }));
-    return blobUrl;
-  }
-  document.getElementById('resume-link').addEventListener('click', async (e) => {
+  document.getElementById('resume-link').addEventListener('click', (e) => {
     e.preventDefault();
-    try {
-      const u = await getBlobUrl();
-      if (!frame.src || frame.src === 'about:blank') frame.src = u + '#toolbar=0&navpanes=0';
-      dl.href = u;
-      pane.classList.add('is-open');
-    } catch { window.open('uploads/Resume.pdf', '_blank'); }
+    if (!frame.src) frame.src = 'uploads/Resume.pdf#toolbar=0&navpanes=0';
+    pane.classList.add('is-open');
   });
   document.getElementById('resume-close').addEventListener('click', () => pane.classList.remove('is-open'));
   const rExpand = document.getElementById('resume-expand');
@@ -1011,8 +999,8 @@
 </script>
 <script>
 (() => {
-  // ---- Tweak defaults (persist via EDITMODE markers) ----
-  const DEFAULTS = /*EDITMODE-BEGIN*/{
+  // ---- Tweak defaults (user changes persist to localStorage) ----
+  const DEFAULTS = {
     "source": "assets\/video\/abstract3.mp4",
     "speed": 1.45,
     "zoom": 1.108146586667539,
@@ -1051,8 +1039,10 @@
     "scanAmt": 0.20610529978336026,
     "veil": 0.5686215359959417,
     "desat": 0.4761870181592043
-  }/*EDITMODE-END*/;
-  const T = window.__tweaks = { ...DEFAULTS };
+  };
+  let savedTweaks = {};
+  try { savedTweaks = JSON.parse(localStorage.getItem('portfolio:tweaks')) || {}; } catch {}
+  const T = window.__tweaks = { ...DEFAULTS, ...savedTweaks };
   if (window.__bgChoice !== 'video') return; // Signal Wash won the lottery
 
   // ---- Pick + load a video source ----
@@ -1407,13 +1397,12 @@
   addEventListener('resize', resize);
 
   // --- Render loop ---
-  const U = name => {
-    const cache = U.cache || (U.cache = {});
-    if (cache[name]) return cache[name];
-    const p = gl.getCurrentProgram ? gl.getCurrentProgram() : null;
-    return null;
+  const uCache = new Map();
+  const uL = (prog, name) => {
+    let m = uCache.get(prog);
+    if (!m) uCache.set(prog, m = {});
+    return name in m ? m[name] : (m[name] = gl.getUniformLocation(prog, name));
   };
-  const uL = (prog, name) => gl.getUniformLocation(prog, name);
 
   const start = performance.now();
   let readyFrames = 0;
@@ -1805,7 +1794,7 @@
 
   function persist(key, value){
     T[key] = value;
-    try { window.parent.postMessage({ type:'__edit_mode_set_keys', edits:{ [key]: value } }, '*'); } catch {}
+    try { localStorage.setItem('portfolio:tweaks', JSON.stringify(T)); } catch {}
   }
 
   // Sliders
@@ -1878,7 +1867,6 @@
       desat: rand(0, 0.5),
     };
 
-    // Apply every value via persist() so EDITMODE block stays in sync
     Object.entries(updates).forEach(([k, v]) => persist(k, v));
 
     // Re-sync sliders, value labels, and toggle states
@@ -2131,13 +2119,14 @@
     });
   }
 
-  // Edit-mode protocol
-  window.addEventListener('message', (e) => {
-    const d = e.data || {};
-    if (d.type === '__activate_edit_mode') panel.classList.add('is-open');
-    else if (d.type === '__deactivate_edit_mode') panel.classList.remove('is-open');
+  // Press "t" (outside form fields) to toggle the panel
+  document.addEventListener('keydown', (e) => {
+    if (e.key !== 't' && e.key !== 'T') return;
+    if (e.metaKey || e.ctrlKey || e.altKey) return;
+    const a = document.activeElement;
+    if (a && (a.tagName === 'INPUT' || a.tagName === 'SELECT' || a.tagName === 'TEXTAREA')) return;
+    panel.classList.toggle('is-open');
   });
-  try { window.parent.postMessage({ type:'__edit_mode_available' }, '*'); } catch {}
 })();
 </script>
 
