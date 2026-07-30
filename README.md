@@ -1,25 +1,27 @@
-# CODING AGENTS: READ THIS FIRST
+# Shehab — Design Portfolio
 
-This is a **handoff bundle** from Claude Design (claude.ai/design).
+Single-page portfolio site. Static, no build step: `index.html` plus assets is the whole deployment.
 
-A user mocked up designs in HTML/CSS/JS using an AI design tool, then exported this bundle so a coding agent can implement the designs for real.
+## Run locally
 
-## What you should do — IMPORTANT
+Any static file server from the repo root, e.g.:
 
-**Read the chat transcripts first.** There are 4 chat transcript(s) in `chats/`. The transcripts show the full back-and-forth between the user and the design assistant — they tell you **what the user actually wants** and **where they landed** after iterating. Don't skip them. The final HTML files are the output, but the chat is where the intent lives.
+```
+python3 -m http.server 8000
+```
 
-**Read `project/Portfolio v2.html` in full.** The user had this file open when they triggered the handoff, so it's almost certainly the primary design they want built. Read it top to bottom — don't skim. Then **follow its imports**: open every file it pulls in (shared components, CSS, scripts) so you understand how the pieces fit together before you start implementing.
+then open http://localhost:8000. (Opening `index.html` via `file://` won't work — the resume pane and video textures need HTTP.)
 
-**If anything is ambiguous, ask the user to confirm before you start implementing.** It's much cheaper to clarify scope up front than to build the wrong thing.
+## Structure
 
-## About the design files
+- `index.html` — the entire site: layout, styles, WebGL background engine, case-study content, and interactions.
+- `assets/signal-wash-bg.js` — Signal Wash generative-art engine (third-party kit, do not modify; attached via `SignalWash.attach`).
+- `assets/video/abstract1–6.mp4` — source loops for the video-shader background.
+- `assets/projects/` — project banners plus per-case-study images (`intuit/`, `pru/`, `way/`).
+- `uploads/Resume.pdf` — served in the resume pane and via its Download button.
 
-The design medium is **HTML/CSS/JS** — these are prototypes, not production code. Your job is to **recreate them pixel-perfectly** in whatever technology makes sense for the target codebase (React, Vue, native, whatever fits). Match the visual output; don't copy the prototype's internal structure unless it happens to fit.
+## How it works
 
-**Don't render these files in a browser or take screenshots unless the user asks you to.** Everything you need — dimensions, colors, layout rules — is spelled out in the source. Read the HTML and CSS directly; a screenshot won't tell you anything they don't.
+Each page load runs a 4-way lottery for the background: the video-texture shader (default look: "Tokenized · Leaf lines" over `abstract3.mp4`) or Signal Wash in Liquidline, Impasto, or Ink Wash. A minimal loader covers the page until the winning engine has painted real frames (4s safety timeout).
 
-## Bundle contents
-
-- `README.md` — this file
-- `chats/` — conversation transcripts (read these!)
-- `project/` — the `Portfolio Experiment` project files (HTML prototypes, assets, components)
+Press **t** to open the Tweaks panel (background FX controls, desktop only). Slider/toggle changes and saved presets persist in `localStorage`.
