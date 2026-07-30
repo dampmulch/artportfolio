@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Signal Wash — background</title>
+<style>html,body{margin:0;height:100%;overflow:hidden;background:#08090c}</style>
+</head>
+<body>
+<script src="signal-wash-bg.js"></script>
+<script>
+/* Iframe form. ?preset=Impasto&video=clip.mp4&interact=full|hover|none&speed=1&seed=7
+   If embedded with pointer-events:none, forward interaction from the parent page:
+   iframe.contentWindow.postMessage({type:'signal-wash', pointer:{x,y}}, '*')   // normalized 0..1, y from top
+   iframe.contentWindow.postMessage({type:'signal-wash', ripple:{x,y}}, '*')
+   iframe.contentWindow.postMessage({type:'signal-wash', preset:'Ink Wash'}, '*') */
+const q=new URLSearchParams(location.search);
+const h=SignalWash.attach(document.body,{
+ preset:q.get('preset')||'Liquidline',
+ video:q.get('video')||undefined,
+ interact:q.get('interact')||'full',
+ speed:q.get('speed')||undefined,
+ seed:q.get('seed')||undefined
+});
+addEventListener('message',e=>{
+ const d=e.data;
+ if(!d||d.type!=='signal-wash')return;
+ if(d.pointer)h.pointer(+d.pointer.x,+d.pointer.y);
+ if(d.ripple)h.ripple(+d.ripple.x,+d.ripple.y,d.ripple.amp);
+ if(d.preset)h.setPreset(d.preset);
+});
+</script>
+</body>
+</html>

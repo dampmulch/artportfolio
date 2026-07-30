@@ -1,0 +1,36 @@
+LI: work Axios
+LI: Intuit
+LI: Prudential
+LI: Wayfinding Design
+LI: about
+LI: resume
+LI: work Axios
+LI: Intuit
+LI: Prudential
+LI: Wayfinding Design
+LI: about
+LI: resume
+P: Contact info:
+LI: Email: hey@shehab.io
+LI: Phone: (201)-912-7328
+LI: take a sip of water!
+P: While at Prudential, I had the opportunity to learn how a large company operates in contrast with the scrappy startups and student orgs I was previously involved with. I was there for the better part of a year and was involved with some cool work.
+H3: LINK by Prudential
+P: I conducted an audit of LINK's analytic reports and instigated conversations with leadership to redesign parts of the Robo-Advisor.
+P: Case Study Coming Soon!
+H3: Prudential Taxonomy
+P: I was tasked with completely redoing the Prudential.com navigation taxonomy following the acquisition of AssuranceIQ and the introduction of a new healthcare product.
+P: I launched a survey to a targeted customer segment to understand what they valued at that arc of their lives—creating a weighted ranked list of our product categories for that customer segment.
+P: I also conducted card sorting exercises with users to tighten up the third-level navigation information architecture.
+H3: PGIM Redesign
+P: After Code&Theory finished their take on the new PGIM.com, I assisted Heather Buchma (design director at PGIM) in running usability tests with in-house finance professionals.
+P: The findings of the tests informed the later iterations of the design now live.
+H3: Design System
+P: I was involved in early conversations and research for Prudential's new design system. I conducted interviews with (in-house and distributed) design and development teams across the organization to prioritize features for the MVP.
+P: I also conducted usability testing of the design system with designers and developers.
+H3: Simple Investment Account
+P: Prudential was primed and positioned well to compete with long-term yet liquid investment accounts like Goldman Sachs Marcus and Betterment.
+P: I designed and evaluated the payments flow to fund the SIA account, focusing on funding, bank redirects, and error handling (and a weird mail-in edge case).
+H3: Design Blog Contribution
+P: I also wrote a blog post to help the next intern ease into the role!
+LI: take a sip of water!

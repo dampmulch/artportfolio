@@ -1,0 +1,2145 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Shehab. Design Portfolio</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400..700&display=swap" />
+<style>
+  :root {
+    --fg: #f2f2ef;
+    --fg-dim: rgba(242, 242, 239, 0.68);
+    --fg-faint: rgba(242, 242, 239, 0.42);
+    --rule: rgba(242, 242, 239, 0.12);
+    --font: 'Segoe UI', -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+  }
+  * { box-sizing: border-box; }
+  html, body {
+    margin: 0; padding: 0;
+    background: #000; color: var(--fg);
+    font-family: var(--font);
+    font-weight: 400;
+    letter-spacing: 0;
+    overflow: hidden;
+    height: 100vh;
+  }
+  #shader-canvas {
+    position: fixed; inset: 0;
+    width: 100vw; height: 100vh;
+    z-index: 0; pointer-events: none;
+  }
+  #grain {
+    position: fixed; inset: 0;
+    z-index: 1; pointer-events: none;
+    opacity: 0.06; mix-blend-mode: overlay;
+    background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='160' height='160'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/></filter><rect width='100%25' height='100%25' filter='url(%23n)' opacity='0.9'/></svg>");
+  }
+  video#src {
+    position: fixed; inset: 0;
+    width: 1px; height: 1px;
+    opacity: 0; pointer-events: none;
+    z-index: -1;
+  }
+  .app {
+    position: relative; z-index: 2;
+    width: 100vw; height: 100vh;
+    display: flex; justify-content: flex-start;
+  }
+  .rail {
+    width: min(560px, 46vw);
+    height: 100%;
+    display: flex; flex-direction: column;
+    row-gap: 44px;
+    padding: 44px 48px;
+    background: rgba(8,8,10,0.82);
+    backdrop-filter: blur(24px) saturate(1.1);
+    -webkit-backdrop-filter: blur(24px) saturate(1.1);
+    border-right: 1px solid rgba(255,255,255,0.1);
+    box-shadow: 30px 0 80px rgba(0,0,0,0.4);
+    overflow-y: auto;
+  }
+  .brand { display: flex; align-items: baseline; justify-content: space-between; gap: 16px; }
+  .brand .mark {
+    font-family: 'Inter', var(--font), sans-serif;
+    font-size: 28px; font-weight: 450; letter-spacing: normal;
+    color: #fff; text-decoration: none; cursor: pointer;
+    display: inline-flex; align-items: baseline; white-space: nowrap;
+  }
+  .brand .mark .skewed-letter { display: inline-block; transition: transform 0.3s ease; }
+  .brand .mark:hover .skewed-letter { transform: skew(0deg, 0deg) rotate(0deg) !important; }
+  .brand .mark:focus-visible { outline: 2px solid rgba(242,242,239,0.7); outline-offset: 4px; border-radius: 2px; }
+  .brand nav { display: flex; align-items: baseline; gap: 22px; }
+  .brand nav a {
+    font-size: 13px; font-weight: 600; letter-spacing: 0.02em;
+    color: var(--fg-dim); text-decoration: none;
+    padding: 4px 0;
+    border-bottom: 1px solid transparent;
+    transition: color 0.2s ease, border-color 0.2s ease;
+  }
+  .brand nav a:hover, .brand nav a:focus-visible {
+    color: var(--fg); border-bottom-color: var(--fg-dim);
+  }
+  .brand nav a:focus-visible { outline: 2px solid rgba(242,242,239,0.7); outline-offset: 4px; border-radius: 2px; }
+  .bio-wrap { flex: 1; padding-top: 4px; }
+  .bio h1 {
+    margin: 0 0 16px;
+    font-size: 30px; line-height: 1.15; letter-spacing: -0.03em;
+    font-weight: 700; color: var(--fg);
+    text-wrap: pretty;
+  }
+  .bio p {
+    margin: 0;
+    font-size: 16px; line-height: 1.6; letter-spacing: 0;
+    font-weight: 400; color: var(--fg-dim);
+    max-width: 52ch; text-wrap: pretty;
+  }
+  .bio p em { font-style: normal; font-weight: 600; color: var(--fg); }
+  .work-wrap { width: 100%; }
+  .rail-footer {
+    display: flex; align-items: center; justify-content: space-between; gap: 16px;
+    padding-top: 20px;
+    border-top: 1px solid var(--rule);
+  }
+  .rail-footer a {
+    display: inline-flex; align-items: center; gap: 7px;
+    font-size: 13px; font-weight: 600; letter-spacing: 0.01em;
+    color: var(--fg-dim); text-decoration: none;
+    padding: 4px 0;
+    transition: color 0.2s ease;
+  }
+  .rail-footer a:hover, .rail-footer a:focus-visible { color: var(--fg); }
+  .rail-footer a:focus-visible { outline: 2px solid rgba(242,242,239,0.7); outline-offset: 4px; border-radius: 2px; }
+  .rail-footer a .ext { font-size: 12px; color: var(--fg-faint); }
+  .rail-footer a:hover .ext { color: var(--fg-dim); }
+  .work-label {
+    font-size: 11px; font-weight: 600; letter-spacing: 0.22em; text-transform: uppercase;
+    color: var(--fg-dim); margin-bottom: 14px;
+    display: flex; align-items: center; gap: 10px;
+  }
+  .projects { list-style: none; margin: 0; padding: 0; border-top: 1px solid var(--rule); }
+  .project { position: relative; }
+  .project a {
+    display: flex; flex-direction: column; gap: 6px;
+    padding: 18px 12px 20px;
+    margin: 0 -12px;
+    color: var(--fg); text-decoration: none;
+    border-radius: 10px;
+    transition: background 0.25s ease;
+  }
+  .project a:hover, .project a:focus-visible {
+    background: rgba(255,255,255,0.06);
+  }
+  .project a:focus-visible {
+    outline: 2px solid rgba(242,242,239,0.7);
+    outline-offset: -2px;
+  }
+  .project .row-top {
+    display: flex; align-items: baseline; justify-content: space-between; gap: 16px;
+  }
+  .project .title {
+    display: inline-flex; align-items: center; gap: 10px;
+    font-size: 24px; line-height: 1.1;
+    letter-spacing: -0.03em; font-weight: 700;
+  }
+  .project .title .arrow {
+    opacity: 0; transform: translateX(-6px);
+    transition: opacity 0.3s ease, transform 0.35s cubic-bezier(.6,.2,.1,1);
+    font-size: 18px; color: var(--fg-dim);
+  }
+  .project a:hover .arrow, .project a:focus-visible .arrow { opacity: 1; transform: translateX(0); }
+  .project .year {
+    font-size: 13px; font-weight: 500;
+    color: var(--fg-dim); font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+  }
+  .project .proj-meta {
+    font-size: 12px; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase;
+    color: var(--fg-faint);
+  }
+  .project .proj-desc {
+    font-size: 14px; line-height: 1.55; font-weight: 400;
+    color: var(--fg-dim); max-width: 52ch; text-wrap: pretty;
+  }
+
+  #preview {
+    position: fixed; top: 0; bottom: 0;
+    left: min(560px, 46vw); right: 0;
+    display: grid; place-items: center;
+    padding: 48px;
+    pointer-events: none; z-index: 9999; opacity: 0;
+    transform: scale(0.98);
+    transition: opacity 0.28s ease, transform 0.35s cubic-bezier(.6,.2,.1,1);
+    will-change: transform, opacity;
+  }
+  #preview.is-visible { opacity: 1; transform: scale(1); }
+  #preview .frame {
+    grid-area: 1 / 1;
+    width: min(44vw, 900px); max-width: 100%;
+    display: flex; flex-direction: column;
+    opacity: 0; transition: opacity 0.28s ease; pointer-events: none;
+  }
+  #preview .frame.active { opacity: 1; }
+  #preview img.media {
+    display: block; width: 100%; height: auto; border-radius: 10px;
+    box-shadow: 0 40px 120px rgba(0,0,0,0.65), 0 0 0 1px rgba(255,255,255,0.06);
+    background: #0a0a0a;
+  }
+  #preview .caption {
+    margin-top: 14px;
+    display: flex; align-items: flex-start; justify-content: space-between;
+    gap: 18px; color: var(--fg);
+  }
+  #preview .caption .t {
+    font-size: 13px; letter-spacing: 0.16em; text-transform: uppercase;
+    color: var(--fg); font-weight: 600;
+  }
+  #preview .caption .yr {
+    font-size: 12px; letter-spacing: 0.14em; text-transform: uppercase;
+    color: var(--fg-dim); font-weight: 600; white-space: nowrap;
+  }
+  #preview .desc { display: none; }
+
+  /* ── Case study pane ── */
+  #case {
+    position: fixed;
+    top: 40px; bottom: 40px; right: 40px;
+    left: calc(min(560px, 46vw) + 40px);
+    z-index: 10001;
+    background: rgba(10,10,12,0.88);
+    backdrop-filter: blur(28px) saturate(1.1);
+    -webkit-backdrop-filter: blur(28px) saturate(1.1);
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 18px;
+    box-shadow: 0 40px 120px rgba(0,0,0,0.55);
+    opacity: 0;
+    transform: scale(0.97);
+    filter: blur(22px);
+    visibility: hidden;
+    transition:
+      opacity 0.55s ease,
+      filter 0.65s ease,
+      transform 0.65s cubic-bezier(.3,.8,.2,1),
+      visibility 0s linear 0.65s,
+      top 0.5s cubic-bezier(.4,.9,.2,1),
+      bottom 0.5s cubic-bezier(.4,.9,.2,1),
+      left 0.5s cubic-bezier(.4,.9,.2,1),
+      right 0.5s cubic-bezier(.4,.9,.2,1),
+      border-radius 0.5s ease;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+  }
+  #case.is-full {
+    top: 0; bottom: 0; left: 0; right: 0;
+    border-radius: 0;
+    border-color: transparent;
+    background: rgba(8,8,10,0.94);
+  }
+  #case.is-full .case-inner { max-width: 860px; padding-top: 96px; }
+  #case.is-open {
+    opacity: 1;
+    transform: scale(1);
+    filter: blur(0);
+    visibility: visible;
+    transition:
+      opacity 0.55s ease,
+      filter 0.65s ease,
+      transform 0.65s cubic-bezier(.3,.8,.2,1);
+  }
+  /* Particle shimmer sweep as the pane materializes */
+  #case::after {
+    content: '';
+    position: absolute; inset: 0;
+    pointer-events: none;
+    border-radius: inherit;
+    background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='140' height='140'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/></filter><rect width='100%25' height='100%25' filter='url(%23n)' opacity='0.9'/></svg>");
+    mix-blend-mode: overlay;
+    opacity: 0;
+  }
+  #case.is-open::after {
+    animation: caseDissolve 0.9s ease-out forwards;
+  }
+  @keyframes caseDissolve {
+    0%   { opacity: 0.9; }
+    100% { opacity: 0; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    #case { transition: opacity 0.3s ease, visibility 0s linear 0.3s; transform: none; filter: none; }
+    #case.is-open { transition: opacity 0.3s ease; }
+    #case.is-open::after { animation: none; }
+  }
+  #case .case-inner {
+    max-width: 720px;
+    margin: 0 auto;
+    padding: 72px 56px 64px;
+  }
+  #case .case-tools {
+    position: sticky; top: 20px;
+    float: right; margin-right: 20px;
+    z-index: 2;
+    display: flex; gap: 8px;
+  }
+  #case .case-close, #case .case-expand {
+    width: 40px; height: 40px;
+    display: inline-flex; align-items: center; justify-content: center;
+    background: rgba(255,255,255,0.08);
+    border: 1px solid rgba(255,255,255,0.16);
+    border-radius: 50%;
+    color: var(--fg); font-size: 18px; line-height: 1;
+    cursor: pointer; font-family: var(--font);
+    transition: background 0.2s ease, border-color 0.2s ease;
+  }
+  #case .case-expand svg { width: 15px; height: 15px; fill: none; stroke: currentColor; stroke-width: 1.6; stroke-linecap: round; }
+  #case .case-expand .ico-out { display: block; }
+  #case .case-expand .ico-in { display: none; }
+  #case.is-full .case-expand .ico-out { display: none; }
+  #case.is-full .case-expand .ico-in { display: block; }
+  #case .case-close:hover, #case .case-expand:hover { background: rgba(255,255,255,0.18); border-color: rgba(255,255,255,0.32); }
+  #case .case-close:focus-visible, #case .case-expand:focus-visible { outline: 2px solid rgba(242,242,239,0.7); outline-offset: 2px; }
+  #case .case-kicker {
+    font-size: 12px; font-weight: 600; letter-spacing: 0.18em; text-transform: uppercase;
+    color: var(--fg-dim); margin-bottom: 14px;
+    display: flex; align-items: center; gap: 10px;
+  }
+  #case .case-kicker::before { content: ''; width: 22px; height: 1px; background: var(--fg-dim); }
+  #case h2 {
+    margin: 0 0 10px;
+    font-size: 44px; line-height: 1.05; letter-spacing: -0.03em;
+    font-weight: 700; color: var(--fg); text-wrap: pretty;
+  }
+  #case .case-sub {
+    font-size: 17px; line-height: 1.55; font-weight: 400;
+    color: var(--fg-dim); max-width: 56ch; margin: 0 0 32px; text-wrap: pretty;
+  }
+  #case .case-facts {
+    display: flex; flex-wrap: wrap; gap: 28px;
+    padding: 20px 0; margin-bottom: 36px;
+    border-top: 1px solid var(--rule);
+    border-bottom: 1px solid var(--rule);
+  }
+  #case .fact { display: flex; flex-direction: column; gap: 4px; }
+  #case .fact .k {
+    font-size: 11px; font-weight: 600; letter-spacing: 0.16em; text-transform: uppercase;
+    color: var(--fg-faint);
+  }
+  #case .fact .v { font-size: 14px; font-weight: 600; color: var(--fg); }
+  #case img.case-hero {
+    display: block; width: 100%; height: auto;
+    border-radius: 12px; margin-bottom: 40px;
+    box-shadow: 0 30px 90px rgba(0,0,0,0.5), 0 0 0 1px rgba(255,255,255,0.06);
+    background: #0a0a0a;
+  }
+  #case .case-body h3 {
+    margin: 0 0 12px;
+    font-size: 13px; font-weight: 600; letter-spacing: 0.18em; text-transform: uppercase;
+    color: var(--fg-dim);
+  }
+  #case .case-body p {
+    margin: 0 0 28px;
+    font-size: 16px; line-height: 1.65; font-weight: 400;
+    color: var(--fg-dim); max-width: 58ch; text-wrap: pretty;
+  }
+  #case .case-body p em { font-style: normal; font-weight: 600; color: var(--fg); }
+  #case .case-body figure {
+    margin: 0 0 28px;
+  }
+  #case .case-body figure img {
+    display: block; width: 100%; height: auto;
+    border-radius: 10px;
+    border: 1px solid rgba(255,255,255,0.08);
+    background: #0a0a0a;
+  }
+  #case .case-body figcaption {
+    margin-top: 10px;
+    font-size: 13px; line-height: 1.5;
+    color: var(--fg-faint); max-width: 58ch;
+  }
+  #case .case-body ul {
+    margin: 0 0 28px; padding-left: 20px;
+    display: flex; flex-direction: column; gap: 8px;
+  }
+  #case .case-body ul li {
+    font-size: 16px; line-height: 1.6; color: var(--fg-dim); max-width: 56ch;
+  }
+  #case .case-nav {
+    display: flex; justify-content: space-between; gap: 16px;
+    margin-top: 56px; padding-top: 24px;
+    border-top: 1px solid var(--rule);
+  }
+  #case .case-nav button {
+    background: none; border: 0; padding: 8px 0;
+    color: var(--fg-dim); font-family: var(--font);
+    font-size: 14px; font-weight: 600; letter-spacing: -0.01em;
+    cursor: pointer; display: inline-flex; align-items: center; gap: 8px;
+    transition: color 0.2s ease;
+  }
+  #case .case-nav button:hover, #case .case-nav button:focus-visible { color: var(--fg); }
+  #case .case-nav button:focus-visible { outline: 2px solid rgba(242,242,239,0.7); outline-offset: 4px; border-radius: 4px; }
+
+  /* Active project row while its case is open */
+  .project a[aria-current="true"] { background: rgba(255,255,255,0.08); }
+
+  /* ── Tweaks panel ─────────────────────────────── */
+  #tweaks {
+    position: fixed; top: 20px; right: 20px;
+    z-index: 10000; display: none;
+    width: 300px; max-height: calc(100vh - 40px);
+    overflow-y: auto;
+    padding: 16px 18px;
+    border-radius: 12px;
+    background: rgba(14,14,16,0.82);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border: 1px solid rgba(255,255,255,0.08);
+    box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+    font-family: var(--font); color: var(--fg);
+  }
+  #tweaks.is-open { display: block; }
+  #tweaks h4 {
+    margin: 0 0 4px; font-size: 10px; font-weight: 600;
+    letter-spacing: 0.22em; text-transform: uppercase; color: var(--fg-dim);
+  }
+  #tweaks .section {
+    padding: 12px 0;
+    border-top: 1px solid rgba(255,255,255,0.06);
+  }
+  #tweaks .section:first-of-type { border-top: 0; padding-top: 8px; }
+  #tweaks .section-title {
+    display: flex; align-items: center; justify-content: space-between;
+    font-size: 10px; font-weight: 700; letter-spacing: 0.14em;
+    text-transform: uppercase; color: var(--fg); margin-bottom: 10px;
+  }
+  #tweaks .toggle {
+    position: relative; display: inline-block;
+    width: 28px; height: 16px;
+    background: rgba(255,255,255,0.1);
+    border-radius: 8px; cursor: pointer;
+    transition: background 0.2s ease;
+  }
+  #tweaks .toggle::after {
+    content: ''; position: absolute; top: 2px; left: 2px;
+    width: 12px; height: 12px;
+    background: #fff; border-radius: 50%;
+    transition: transform 0.2s ease;
+  }
+  #tweaks .toggle.on { background: rgba(242, 242, 239, 0.7); }
+  #tweaks .toggle.on::after { transform: translateX(12px); }
+
+  #tweaks .row {
+    display: flex; flex-direction: column; gap: 5px;
+    margin-bottom: 10px;
+  }
+  #tweaks .row:last-child { margin-bottom: 0; }
+  #tweaks label {
+    font-size: 10px; font-weight: 500; letter-spacing: 0.02em;
+    display: flex; justify-content: space-between; color: var(--fg-dim);
+  }
+  #tweaks label span.val { color: var(--fg); font-variant-numeric: tabular-nums; }
+  #tweaks input[type=range] {
+    -webkit-appearance: none; appearance: none;
+    width: 100%; height: 2px;
+    background: rgba(255,255,255,0.14);
+    border-radius: 2px; outline: none;
+  }
+  #tweaks input[type=range]::-webkit-slider-thumb {
+    -webkit-appearance: none; appearance: none;
+    width: 12px; height: 12px; border-radius: 50%;
+    background: #fff; cursor: pointer; border: 0;
+  }
+  #tweaks input[type=range]::-moz-range-thumb {
+    width: 12px; height: 12px; border-radius: 50%;
+    background: #fff; cursor: pointer; border: 0;
+  }
+  #tweaks .section[data-off] .row { opacity: 0.35; pointer-events: none; }
+  #tweaks select {
+    width: 100%; padding: 6px 8px;
+    background: rgba(255,255,255,0.06);
+    border: 1px solid rgba(255,255,255,0.1);
+    color: var(--fg); font-family: var(--font);
+    font-size: 11px; border-radius: 6px;
+    outline: none; cursor: pointer;
+  }
+  #tweaks select option {
+    background: #141416;
+    color: #f2f2ef;
+  }
+  #tweaks input[type=text] {
+    flex: 1; min-width: 0;
+    padding: 6px 8px;
+    background: rgba(255,255,255,0.06);
+    border: 1px solid rgba(255,255,255,0.1);
+    color: var(--fg); font-family: var(--font);
+    font-size: 11px; border-radius: 6px;
+    outline: none;
+  }
+  #tweaks input[type=text]::placeholder { color: var(--fg-faint); }
+  #tweaks input[type=text]:focus { border-color: rgba(255,255,255,0.28); }
+  #tweaks .preset-row {
+    display: flex; align-items: center; gap: 6px;
+  }
+  #tweaks .icon-btn {
+    flex: 0 0 auto;
+    width: 28px; height: 28px;
+    display: inline-flex; align-items: center; justify-content: center;
+    background: rgba(255,255,255,0.06);
+    border: 1px solid rgba(255,255,255,0.12);
+    border-radius: 6px;
+    color: var(--fg); cursor: pointer;
+    font-family: var(--font); font-size: 13px;
+    transition: background 0.15s ease, border-color 0.15s ease, opacity 0.15s ease;
+  }
+  #tweaks .icon-btn:hover { background: rgba(255,255,255,0.14); border-color: rgba(255,255,255,0.28); }
+  #tweaks .icon-btn:disabled { opacity: 0.35; cursor: not-allowed; }
+  #tweaks .section-title {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+  }
+  #tweaks .btn-randomize {
+    font-family: var(--font);
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--fg);
+    background: rgba(255,255,255,0.08);
+    border: 1px solid rgba(255,255,255,0.16);
+    border-radius: 999px;
+    padding: 4px 10px;
+    cursor: pointer;
+    transition: background 0.2s ease, border-color 0.2s ease, transform 0.2s ease;
+  }
+  #tweaks .btn-randomize:hover {
+    background: rgba(255,255,255,0.18);
+    border-color: rgba(255,255,255,0.32);
+  }
+  #tweaks .btn-randomize:active { transform: scale(0.96); }
+
+  @media (max-width: 1200px) {
+    /* Tighter float insets so the case card keeps a readable measure */
+    #case {
+      top: 24px; bottom: 24px; right: 24px;
+      left: calc(min(560px, 46vw) + 24px);
+    }
+    #case .case-inner { padding: 64px 40px 56px; }
+    #case h2 { font-size: 38px; }
+  }
+
+  @media (max-width: 900px) {
+    .rail { width: 100%; border-right: 0; padding: 28px; row-gap: 32px; }
+    #preview { display: none; }
+    #tweaks { display: none !important; }
+
+    /* Case study becomes a near-fullscreen card; art peeks at the edges */
+    #case {
+      top: 20px; bottom: 20px; left: 20px; right: 20px;
+    }
+    #case .case-inner { padding: 64px 32px 48px; }
+    #case h2 { font-size: 34px; }
+    #case .case-sub { font-size: 16px; }
+    #case .case-tools {
+      position: sticky; top: 18px;
+      float: right; margin: 0 18px 0 0;
+    }
+    #case .case-close, #case .case-expand {
+      width: 44px; height: 44px; font-size: 20px;
+      background: rgba(20,20,24,0.85);
+    }
+  }
+
+  @media (max-width: 640px) {
+    .rail { padding: 24px 20px calc(24px + env(safe-area-inset-bottom)); row-gap: 28px; }
+    .bio h1 { font-size: 26px; }
+    .brand nav { gap: 16px; }
+    .brand nav a { padding: 10px 4px; }
+    .rail-footer { flex-direction: row; flex-wrap: wrap; }
+    .rail-footer a { padding: 10px 0; }
+
+    /* Case study becomes a bottom sheet — slides up from below,
+       stopping short of the header so the brand stays visible */
+    #case {
+      top: calc(76px + env(safe-area-inset-top)); bottom: 0; left: 0; right: 0;
+      border-radius: 20px 20px 0 0;
+      border-bottom: 0;
+      opacity: 1;
+      transform: translateY(100%);
+      filter: none;
+      transition:
+        transform 0.45s cubic-bezier(.4,.9,.2,1),
+        visibility 0s linear 0.45s;
+    }
+    #case.is-open {
+      transform: translateY(0);
+      transition: transform 0.45s cubic-bezier(.4,.9,.2,1);
+    }
+    #case.is-open::after { animation: none; }
+    #case .case-inner {
+      padding: 58px 22px calc(40px + env(safe-area-inset-bottom));
+    }
+    #case h2 { font-size: 29px; }
+    #case .case-facts { gap: 14px 22px; padding: 16px 0; margin-bottom: 28px; }
+    #case .case-body p { font-size: 15px; }
+    #case .case-tools { top: 14px; margin-right: 14px; }
+    #case .case-nav { margin-top: 40px; }
+    #case .case-nav button { padding: 12px 0; min-height: 44px; }
+  }
+
+  @media (max-width: 640px) and (prefers-reduced-motion: reduce) {
+    #case { transform: none; opacity: 0; transition: opacity 0.3s ease, visibility 0s linear 0.3s; }
+    #case.is-open { opacity: 1; transition: opacity 0.3s ease; }
+  }
+
+  /* ── Resume pane ── */
+  #resume-pane {
+    position: fixed;
+    top: 40px; bottom: 40px; right: 40px;
+    left: calc(min(560px, 46vw) + 40px);
+    z-index: 10001;
+    background: rgba(10,10,12,0.88);
+    backdrop-filter: blur(28px) saturate(1.1);
+    -webkit-backdrop-filter: blur(28px) saturate(1.1);
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 18px;
+    box-shadow: 0 40px 120px rgba(0,0,0,0.55);
+    display: flex; flex-direction: column;
+    opacity: 0; visibility: hidden;
+    transition: opacity 0.4s ease, visibility 0s linear 0.4s,
+      top 0.5s cubic-bezier(.4,.9,.2,1), bottom 0.5s cubic-bezier(.4,.9,.2,1),
+      left 0.5s cubic-bezier(.4,.9,.2,1), right 0.5s cubic-bezier(.4,.9,.2,1),
+      border-radius 0.5s ease;
+  }
+  #resume-pane.is-open { opacity: 1; visibility: visible; transition: opacity 0.4s ease,
+      top 0.5s cubic-bezier(.4,.9,.2,1), bottom 0.5s cubic-bezier(.4,.9,.2,1),
+      left 0.5s cubic-bezier(.4,.9,.2,1), right 0.5s cubic-bezier(.4,.9,.2,1),
+      border-radius 0.5s ease; }
+  #resume-pane .pane-bar {
+    display: flex; justify-content: flex-end; gap: 8px;
+    padding: 14px 16px;
+  }
+  #resume-pane .pane-btn {
+    height: 40px; min-width: 40px; padding: 0 16px;
+    display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+    background: rgba(255,255,255,0.08);
+    border: 1px solid rgba(255,255,255,0.16);
+    border-radius: 20px;
+    color: var(--fg); font-size: 14px; line-height: 1;
+    cursor: pointer; font-family: var(--font); text-decoration: none;
+    transition: background 0.2s ease, border-color 0.2s ease;
+  }
+  #resume-pane .pane-btn.icon { width: 40px; padding: 0; font-size: 18px; }
+  #resume-pane .pane-btn:hover { background: rgba(255,255,255,0.18); border-color: rgba(255,255,255,0.32); }
+  #resume-pane .pane-btn:focus-visible { outline: 2px solid rgba(242,242,239,0.7); outline-offset: 2px; }
+  #resume-pane iframe { flex: 1; width: 100%; border: 0; border-radius: 0 0 17px 17px; background: #1a1a1e; }
+  #resume-pane.is-full { top: 0; bottom: 0; left: 0; right: 0; border-radius: 0; border-color: transparent; }
+  #resume-pane.is-full iframe { border-radius: 0; }
+  #resume-pane .pane-btn.icon svg { width: 15px; height: 15px; fill: none; stroke: currentColor; stroke-width: 1.6; stroke-linecap: round; }
+  #resume-pane .ico-in { display: none; }
+  #resume-pane.is-full .ico-out { display: none; }
+  #resume-pane.is-full .ico-in { display: block; }
+  @media (max-width: 900px) {
+    #resume-pane { top: 20px; bottom: 20px; left: 20px; right: 20px; }
+  }
+  @media (max-width: 640px) {
+    #resume-pane {
+      top: calc(76px + env(safe-area-inset-top)); bottom: 0; left: 0; right: 0;
+      border-radius: 20px 20px 0 0; border-bottom: 0;
+    }
+    #resume-pane iframe { border-radius: 0; }
+  }
+
+  /* ── Loader ─────────────────────────────────────── */
+  #sw-bg { position: fixed; inset: 0; width: 100vw; height: 100vh; display: none; }
+  #shader-canvas, #sw-bg, .app { opacity: 0; transition: opacity 0.9s ease 0.05s; }
+  body.ready #shader-canvas, body.ready #sw-bg, body.ready .app { opacity: 1; }
+  #loader {
+    position: fixed; inset: 0; z-index: 50;
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    background: #000; gap: 22px;
+    transition: opacity 0.6s ease;
+  }
+  body.ready #loader { opacity: 0; pointer-events: none; }
+  #loader .load-mark {
+    font-size: 15px; letter-spacing: 0.02em; font-weight: 500;
+    color: var(--fg-dim); animation: loadPulse 1.6s ease-in-out infinite;
+  }
+  #loader .load-bar {
+    width: 132px; height: 1px; background: var(--rule);
+    position: relative; overflow: hidden;
+  }
+  #loader .load-bar::after {
+    content: ''; position: absolute; inset: 0;
+    width: 40%; background: var(--fg-dim);
+    animation: loadSweep 1.35s cubic-bezier(0.65,0,0.35,1) infinite;
+  }
+  @keyframes loadPulse { 0%,100%{opacity:0.4} 50%{opacity:0.85} }
+  @keyframes loadSweep {
+    0%{transform:translateX(-100%)} 100%{transform:translateX(330%)}
+  }
+  @media (prefers-reduced-motion: reduce) {
+    #loader .load-mark { animation: none; }
+    #loader .load-bar::after { animation: loadSweep 1.35s linear infinite; }
+  }
+</style>
+</head>
+<body>
+
+<div id="loader">
+  <div class="load-bar"></div>
+</div>
+
+<video id="src" autoplay muted loop playsinline crossorigin="anonymous"></video>
+<canvas id="shader-canvas"></canvas>
+<div id="sw-bg"></div>
+<div id="grain"></div>
+
+<div class="app">
+  <div class="rail">
+    <header class="brand">
+      <a class="mark" href="#" id="brand-home"><span class="skewed-letter">S</span><span class="skewed-letter">h</span><span class="skewed-letter">e</span><span class="skewed-letter">h</span><span class="skewed-letter">a</span><span class="skewed-letter">b</span></a>
+      <nav aria-label="Site">
+        <a href="uploads/Resume.pdf" id="resume-link" target="_blank" rel="noopener">Resume</a>
+      </nav>
+    </header>
+
+    <div class="bio-wrap">
+      <div class="bio">
+        <h1>Systems-oriented product designer with a strong technical foundation.</h1>
+        <p>Experience spans startups to large corporations: AI-powered tooling, complex operating systems, multi-brand design systems, and zero-to-one experiences. <em>Currently designing secure onboarding at American Express.</em></p>
+      </div>
+    </div>
+
+    <div class="work-wrap">
+      <div class="work-label">Stuff I've done</div>
+      <ul class="projects" id="projects">
+        <li class="project"><a href="#axios" data-img="axios">
+          <span class="row-top"><span class="title">Axios <span class="arrow">↗</span></span><span class="year">2024</span></span>
+          <span class="proj-meta">AI Newsroom · News</span>
+          <span class="proj-desc">Elevating digital news delivery through AI‑powered tools for both consumers and newsrooms.</span>
+        </a></li>
+        <li class="project"><a href="#intuit" data-img="intuit">
+          <span class="row-top"><span class="title">Intuit <span class="arrow">↗</span></span><span class="year">2023</span></span>
+          <span class="proj-meta">QuickBooks AppConnect · SMB</span>
+          <span class="proj-desc">Extending the utility of small businesses to help them compete with major retailers.</span>
+        </a></li>
+        <li class="project"><a href="#pru" data-img="pru">
+          <span class="row-top"><span class="title">Prudential <span class="arrow">↗</span></span><span class="year">2022</span></span>
+          <span class="proj-meta">PGIM · Finance</span>
+          <span class="proj-desc">Taxonomy, design system, SIA payments flow, and PGIM usability across the finance giant.</span>
+        </a></li>
+        <li class="project"><a href="#way" data-img="way">
+          <span class="row-top"><span class="title">Wayfinding <span class="arrow">↗</span></span><span class="year">2021</span></span>
+          <span class="proj-meta">NJIT · Research</span>
+          <span class="proj-desc">Enhancing wayfinding for NJIT's Hillier College through eye‑tracking research.</span>
+        </a></li>
+      </ul>
+    </div>
+
+    <footer class="rail-footer">
+      <a href="https://www.linkedin.com/in/shehab123" target="_blank" rel="noopener">LinkedIn <span class="ext">↗</span></a>
+      <a href="mailto:shehab.a.ibrahim@gmail.com">shehab.a.ibrahim@gmail.com</a>
+    </footer>
+  </div>
+</div>
+
+<div id="preview" aria-hidden="true">
+  <div class="frame" id="frame-axios">
+    <img class="media" src="assets/projects/axios.jpg" alt="" />
+    <div class="caption"><span class="t">Axios · AI Newsroom</span><span class="yr">2024 · News</span></div>
+    <div class="desc">Elevating digital news delivery through AI‑powered tools for both consumers and newsrooms.</div>
+  </div>
+  <div class="frame" id="frame-intuit">
+    <img class="media" src="assets/projects/intuit.jpg" alt="" />
+    <div class="caption"><span class="t">Intuit · QuickBooks AppConnect</span><span class="yr">2023 · SMB</span></div>
+    <div class="desc">Extending the utility of small businesses to help them compete with major retailers.</div>
+  </div>
+  <div class="frame" id="frame-pru">
+    <img class="media" src="assets/projects/prudential.jpg" alt="" />
+    <div class="caption"><span class="t">Prudential / PGIM</span><span class="yr">2022 · Finance</span></div>
+    <div class="desc">Taxonomy, design system, SIA payments flow, and PGIM usability across the finance giant.</div>
+  </div>
+  <div class="frame" id="frame-way">
+    <img class="media" src="assets/projects/wayfinding.gif" alt="" />
+    <div class="caption"><span class="t">Wayfinding · NJIT</span><span class="yr">2021 · Research</span></div>
+    <div class="desc">Enhancing wayfinding for NJIT's Hillier College through eye‑tracking research.</div>
+  </div>
+</div>
+
+<!-- ── Tweaks panel markup ───────────────────────────────── -->
+<div id="resume-pane" role="dialog" aria-modal="false" aria-label="Resume">
+  <div class="pane-bar">
+    <a class="pane-btn" id="resume-download" href="uploads/Resume.pdf" download="Shehab-Resume.pdf">Download</a>
+    <button class="pane-btn icon" id="resume-expand" type="button" aria-label="Expand to full page" aria-pressed="false" title="Expand"><svg class="ico-out" viewBox="0 0 16 16"><path d="M6 2H2v4M10 2h4v4M10 14h4v-4M6 14H2v-4"></path></svg><svg class="ico-in" viewBox="0 0 16 16"><path d="M2 6h4V2M14 6h-4V2M14 10h-4v4M2 10h4v4"></path></svg></button>
+    <button class="pane-btn icon" id="resume-close" type="button" aria-label="Close resume">×</button>
+  </div>
+  <iframe id="resume-frame" title="Resume PDF"></iframe>
+</div>
+
+<div id="case" role="dialog" aria-modal="false" aria-label="Case study">
+  <div class="case-tools">
+    <button class="case-expand" id="case-expand" type="button" aria-label="Expand to full page" aria-pressed="false" title="Expand"><svg class="ico-out" viewBox="0 0 16 16"><path d="M6 2H2v4M10 2h4v4M10 14h4v-4M6 14H2v-4"></path></svg><svg class="ico-in" viewBox="0 0 16 16"><path d="M2 6h4V2M14 6h-4V2M14 10h-4v4M2 10h4v4"></path></svg></button>
+    <button class="case-close" id="case-close" type="button" aria-label="Close case study">×</button>
+  </div>
+  <div class="case-inner">
+    <div class="case-kicker" id="case-kicker"></div>
+    <h2 id="case-title"></h2>
+    <p class="case-sub" id="case-sub"></p>
+    <div class="case-facts" id="case-facts"></div>
+    <img class="case-hero" id="case-hero" alt="" />
+    <div class="case-body" id="case-body"></div>
+    <div class="case-nav">
+      <button type="button" id="case-prev"></button>
+      <button type="button" id="case-next"></button>
+    </div>
+  </div>
+</div>
+
+<div id="tweaks" aria-label="Tweaks">
+  <h4>Tweaks · Background FX</h4>
+
+  <div class="section" id="sec-presets">
+    <div class="section-title">Presets</div>
+    <div class="row preset-row">
+      <select id="preset-select"></select>
+      <button id="btn-delete-preset" class="icon-btn" type="button" title="Delete selected preset" disabled>×</button>
+    </div>
+    <div class="row preset-row">
+      <input id="preset-name" type="text" placeholder="Name this look…" maxlength="40" />
+      <button id="btn-save-preset" class="icon-btn" type="button" title="Save current as preset">＋</button>
+    </div>
+  </div>
+
+  <div class="section" id="sec-source">
+    <div class="section-title">
+      Source
+      <button id="btn-randomize" class="btn-randomize" type="button" title="Randomize every setting">↻ Randomize</button>
+    </div>
+    <div class="row">
+      <select id="src-select">
+        <option value="random">Random on load</option>
+        <option value="assets/video/abstract1.mp4">Abstract 1 · fluid</option>
+        <option value="assets/video/abstract2.mp4">Abstract 2 · particles</option>
+        <option value="assets/video/abstract3.mp4">Abstract 3 · ink</option>
+        <option value="assets/video/abstract4.mp4">Abstract 4 · smoke</option>
+        <option value="assets/video/abstract5.mp4">Abstract 5 · geometric</option>
+        <option value="assets/video/abstract6.mp4">Abstract 6 · liquid</option>
+      </select>
+    </div>
+    <div class="row">
+      <label>Speed <span class="val" id="v-speed">1.00×</span></label>
+      <input data-key="speed" type="range" min="0.1" max="3" step="0.05" />
+    </div>
+    <div class="row">
+      <label>Zoom <span class="val" id="v-zoom">1.00×</span></label>
+      <input data-key="zoom" type="range" min="1" max="3" step="0.01" />
+    </div>
+    <div class="row">
+      <label>Hue <span class="val" id="v-hue">0°</span></label>
+      <input data-key="hue" type="range" min="0" max="360" step="1" />
+    </div>
+    <div class="row">
+      <label>Saturation <span class="val" id="v-sat">1.00</span></label>
+      <input data-key="sat" type="range" min="0" max="2" step="0.01" />
+    </div>
+  </div>
+
+  <div class="section" id="sec-smear">
+    <div class="section-title">Slit-scan smear <span class="toggle" data-toggle="smearOn"></span></div>
+    <div class="row"><label>Amount <span class="val" id="v-smearAmt">0.00</span></label><input data-key="smearAmt" type="range" min="0" max="1" step="0.01" /></div>
+    <div class="row"><label>Angle <span class="val" id="v-smearAngle">45°</span></label><input data-key="smearAngle" type="range" min="0" max="180" step="1" /></div>
+  </div>
+
+  <div class="section" id="sec-poster">
+    <div class="section-title">Posterize <span class="toggle" data-toggle="posterOn"></span></div>
+    <div class="row"><label>Levels <span class="val" id="v-posterLvl">6</span></label><input data-key="posterLvl" type="range" min="2" max="16" step="1" /></div>
+  </div>
+
+  <div class="section" id="sec-chroma">
+    <div class="section-title">Chroma shift <span class="toggle" data-toggle="chromaOn"></span></div>
+    <div class="row"><label>Offset <span class="val" id="v-chromaAmt">0.010</span></label><input data-key="chromaAmt" type="range" min="0" max="0.05" step="0.001" /></div>
+  </div>
+
+  <div class="section" id="sec-displace">
+    <div class="section-title">Scribble displace <span class="toggle" data-toggle="displaceOn"></span></div>
+    <div class="row"><label>Amount <span class="val" id="v-displaceAmt">0.020</span></label><input data-key="displaceAmt" type="range" min="0" max="0.15" step="0.001" /></div>
+    <div class="row"><label>Scale <span class="val" id="v-displaceScale">4</span></label><input data-key="displaceScale" type="range" min="1" max="20" step="0.5" /></div>
+  </div>
+
+  <div class="section" id="sec-streaks">
+    <div class="section-title">Flow streaks <span class="toggle" data-toggle="streaksOn"></span></div>
+    <div class="row"><label>Amount <span class="val" id="v-streakAmt">0.80</span></label><input data-key="streakAmt" type="range" min="0" max="1" step="0.01" /></div>
+    <div class="row"><label>Length <span class="val" id="v-streakLen">0.12</span></label><input data-key="streakLen" type="range" min="0.01" max="0.5" step="0.005" /></div>
+    <div class="row"><label>Field scale <span class="val" id="v-streakScale">5.0</span></label><input data-key="streakScale" type="range" min="0.5" max="20" step="0.1" /></div>
+    <div class="row"><label>Flow speed <span class="val" id="v-streakFlow">1.00</span></label><input data-key="streakFlow" type="range" min="0" max="5" step="0.05" /></div>
+  </div>
+
+  <div class="section" id="sec-sort">
+    <div class="section-title">Pixel sort <span class="toggle" data-toggle="sortOn"></span></div>
+    <div class="row"><label>Threshold <span class="val" id="v-sortThr">0.45</span></label><input data-key="sortThr" type="range" min="0" max="1" step="0.01" /></div>
+  </div>
+
+  <div class="section" id="sec-bloom">
+    <div class="section-title">Bloom <span class="toggle" data-toggle="bloomOn"></span></div>
+    <div class="row"><label>Threshold <span class="val" id="v-bloomThr">0.60</span></label><input data-key="bloomThr" type="range" min="0" max="1" step="0.01" /></div>
+    <div class="row"><label>Strength <span class="val" id="v-bloomStr">0.80</span></label><input data-key="bloomStr" type="range" min="0" max="2" step="0.01" /></div>
+  </div>
+
+  <div class="section" id="sec-lines">
+    <div class="section-title">Pure lines <span class="toggle" data-toggle="linesOn"></span></div>
+    <div class="row"><label>Density <span class="val" id="v-linesDensity">90</span></label><input data-key="linesDensity" type="range" min="10" max="300" step="1" /></div>
+    <div class="row"><label>Thickness <span class="val" id="v-linesThick">0.40</span></label><input data-key="linesThick" type="range" min="0.05" max="0.95" step="0.01" /></div>
+    <div class="row"><label>Warp <span class="val" id="v-linesWarp">0.50</span></label><input data-key="linesWarp" type="range" min="0" max="2" step="0.01" /></div>
+    <div class="row"><label>Field scale <span class="val" id="v-linesScale">2.5</span></label><input data-key="linesScale" type="range" min="0.3" max="10" step="0.1" /></div>
+    <div class="row"><label>Flow speed <span class="val" id="v-linesFlow">0.60</span></label><input data-key="linesFlow" type="range" min="0" max="3" step="0.05" /></div>
+    <div class="row"><label>Contrast <span class="val" id="v-linesContrast">0.85</span></label><input data-key="linesContrast" type="range" min="0" max="1" step="0.01" /></div>
+  </div>
+
+  <div class="section" id="sec-grain">
+    <div class="section-title">Grain <span class="toggle" data-toggle="grainOn"></span></div>
+    <div class="row"><label>Amount <span class="val" id="v-grainAmt">0.08</span></label><input data-key="grainAmt" type="range" min="0" max="0.4" step="0.01" /></div>
+  </div>
+
+  <div class="section" id="sec-scan">
+    <div class="section-title">Scanlines <span class="toggle" data-toggle="scanOn"></span></div>
+    <div class="row"><label>Amount <span class="val" id="v-scanAmt">0.25</span></label><input data-key="scanAmt" type="range" min="0" max="1" step="0.01" /></div>
+  </div>
+
+  <div class="section" id="sec-veil">
+    <div class="section-title">Readability veil</div>
+    <div class="row"><label>Darken <span class="val" id="v-veil">0.60</span></label><input data-key="veil" type="range" min="0" max="1" step="0.01" /></div>
+    <div class="row"><label>Desaturate <span class="val" id="v-desat">0.35</span></label><input data-key="desat" type="range" min="0" max="1" step="0.01" /></div>
+  </div>
+</div>
+
+<!-- ── WebGL video-effects rack ─────────────────────────── -->
+<script>
+(() => {
+  const pane = document.getElementById('resume-pane');
+  const frame = document.getElementById('resume-frame');
+  const dl = document.getElementById('resume-download');
+  let blobUrl = null;
+  async function getBlobUrl() {
+    if (blobUrl) return blobUrl;
+    const r = await fetch('uploads/Resume.pdf');
+    const b = await r.blob();
+    blobUrl = URL.createObjectURL(new Blob([b], { type: 'application/pdf' }));
+    return blobUrl;
+  }
+  document.getElementById('resume-link').addEventListener('click', async (e) => {
+    e.preventDefault();
+    try {
+      const u = await getBlobUrl();
+      if (!frame.src || frame.src === 'about:blank') frame.src = u + '#toolbar=0&navpanes=0';
+      dl.href = u;
+      pane.classList.add('is-open');
+    } catch { window.open('uploads/Resume.pdf', '_blank'); }
+  });
+  document.getElementById('resume-close').addEventListener('click', () => pane.classList.remove('is-open'));
+  const rExpand = document.getElementById('resume-expand');
+  rExpand.addEventListener('click', () => {
+    const full = pane.classList.toggle('is-full');
+    rExpand.setAttribute('aria-pressed', full ? 'true' : 'false');
+    rExpand.setAttribute('aria-label', full ? 'Exit full page' : 'Expand to full page');
+    rExpand.title = full ? 'Collapse' : 'Expand';
+  });
+  document.addEventListener('keydown', (e) => {
+    if (e.key !== 'Escape' || !pane.classList.contains('is-open')) return;
+    if (pane.classList.contains('is-full')) { rExpand.click(); return; }
+    pane.classList.remove('is-open');
+  });
+})();
+</script>
+<script>
+(() => {
+  const el = document.getElementById('brand-home');
+  const letters = el.querySelectorAll('.skewed-letter');
+  function randomSkewLogo() {
+    letters.forEach(letter => {
+      const skewX = (Math.random() - 0.5) * 120; // Random between -60 and 60
+      const skewY = (Math.random() - 0.5) * 100; // Random between -50 and 50
+      const rotate = (Math.random() - 0.5) * 360; // Random rotation between -180 and 180
+      letter.style.transform = `skew(${skewX}deg, ${skewY}deg) rotate(${rotate}deg)`;
+    });
+  }
+  function straightenLogo() {
+    letters.forEach(letter => { letter.style.transform = 'skew(0deg, 0deg) rotate(0deg)'; });
+  }
+  function delayedSkewLogo(delay = 1000) {
+    straightenLogo();
+    setTimeout(randomSkewLogo, delay);
+  }
+  let hoverTimeout = null;
+  el.addEventListener('mouseenter', () => {
+    if (hoverTimeout) { clearTimeout(hoverTimeout); hoverTimeout = null; }
+    // Straighten immediately on hover
+    straightenLogo();
+  });
+  el.addEventListener('mouseleave', () => {
+    // Immediately go skewed again on mouse leave
+    randomSkewLogo();
+  });
+  el.addEventListener('click', randomSkewLogo);
+  // Homepage behavior: start straight, skew 1s after the page reveals
+  const obs = new MutationObserver(() => {
+    if (document.body.classList.contains('ready')) { obs.disconnect(); delayedSkewLogo(1000); }
+  });
+  obs.observe(document.body, { attributes: true, attributeFilter: ['class'] });
+})();
+</script>
+<script src="assets/signal-wash-bg.js"></script>
+<script>
+(() => {
+  const MODES = ['video', 'Liquidline', 'Impasto', 'Ink Wash'];
+  const pick = MODES[Math.floor(Math.random() * MODES.length)];
+  window.__bgChoice = pick;
+  window.__revealPage = () => {
+    if (document.body.classList.contains('ready')) return;
+    document.body.classList.add('ready');
+    setTimeout(() => { const l = document.getElementById('loader'); if (l) l.remove(); }, 800);
+  };
+  setTimeout(window.__revealPage, 4000); // safety net
+  if (pick === 'video') return;
+  document.getElementById('src').style.display = 'none';
+  document.getElementById('shader-canvas').style.display = 'none';
+  const host = document.getElementById('sw-bg');
+  host.style.display = 'block';
+  SignalWash.attach(host, { preset: pick, interact: 'full' });
+  requestAnimationFrame(() => requestAnimationFrame(() => setTimeout(window.__revealPage, 250)));
+})();
+</script>
+<script>
+(() => {
+  // ---- Tweak defaults (persist via EDITMODE markers) ----
+  const DEFAULTS = /*EDITMODE-BEGIN*/{
+    "source": "assets\/video\/abstract3.mp4",
+    "speed": 1.45,
+    "zoom": 1.108146586667539,
+    "hue": 130,
+    "sat": 1.3930717796799699,
+    "smearOn": false,
+    "smearAmt": 0.5464934948669194,
+    "smearAngle": 121,
+    "posterOn": true,
+    "posterLvl": 9,
+    "chromaOn": true,
+    "chromaAmt": 0.014034788950899223,
+    "displaceOn": true,
+    "displaceAmt": 0.03267433808094194,
+    "displaceScale": 8.1,
+    "sortOn": false,
+    "sortThr": 0.3624513105957834,
+    "streaksOn": false,
+    "streakAmt": 0.8,
+    "streakLen": 0.12,
+    "streakScale": 5,
+    "streakFlow": 1,
+    "linesOn": true,
+    "linesDensity": 90,
+    "linesThick": 0.4,
+    "linesWarp": 0.5,
+    "linesScale": 2.5,
+    "linesFlow": 0.6,
+    "linesContrast": 0.85,
+    "bloomOn": true,
+    "bloomThr": 0.5619970450028355,
+    "bloomStr": 0.46895287152284115,
+    "grainOn": false,
+    "grainAmt": 0.05287363949463554,
+    "scanOn": false,
+    "scanAmt": 0.20610529978336026,
+    "veil": 0.5686215359959417,
+    "desat": 0.4761870181592043
+  }/*EDITMODE-END*/;
+  const T = window.__tweaks = { ...DEFAULTS };
+  if (window.__bgChoice !== 'video') return; // Signal Wash won the lottery
+
+  // ---- Pick + load a video source ----
+  const SOURCES = [
+    'assets/video/abstract1.mp4',
+    'assets/video/abstract2.mp4',
+    'assets/video/abstract3.mp4',
+    'assets/video/abstract4.mp4',
+    'assets/video/abstract5.mp4',
+    'assets/video/abstract6.mp4'
+  ];
+  const video = document.getElementById('src');
+  function setSource(path) {
+    const actual = (path === 'random')
+      ? SOURCES[Math.floor(Math.random() * SOURCES.length)]
+      : path;
+    if (video.src.endsWith(actual)) return;
+    video.src = actual;
+    video.load();
+    video.play().catch(() => {});
+  }
+  setSource(T.source);
+
+  // ---- WebGL setup ----
+  const canvas = document.getElementById('shader-canvas');
+  const gl = canvas.getContext('webgl', { antialias: false, premultipliedAlpha: false });
+  if (!gl) return;
+
+  const VS = `attribute vec2 a_pos; varying vec2 v_uv;
+    void main(){ v_uv = a_pos*0.5+0.5; gl_Position = vec4(a_pos,0.,1.); }`;
+
+  // Main pass: samples video + applies most effects
+  const FS_MAIN = `
+    precision highp float;
+    varying vec2 v_uv;
+    uniform sampler2D u_tex;
+    uniform vec2 u_res;
+    uniform vec2 u_vidRes;
+    uniform float u_time;
+
+    uniform float u_zoom;
+    uniform float u_hue;
+    uniform float u_sat;
+    uniform float u_smearOn, u_smearAmt, u_smearAngle;
+    uniform float u_posterOn, u_posterLvl;
+    uniform float u_chromaOn, u_chromaAmt;
+    uniform float u_displaceOn, u_displaceAmt, u_displaceScale;
+    uniform float u_sortOn, u_sortThr;
+    uniform float u_streaksOn, u_streakAmt, u_streakLen, u_streakScale, u_streakFlow;
+    uniform float u_linesOn, u_linesDensity, u_linesThick, u_linesWarp, u_linesScale, u_linesFlow, u_linesContrast;
+    uniform float u_grainOn, u_grainAmt;
+    uniform float u_scanOn, u_scanAmt;
+    uniform float u_veil, u_desat;
+
+    // Random / noise
+    float hash(vec2 p){ p = fract(p*vec2(123.34,456.21)); p += dot(p, p+45.32); return fract(p.x*p.y); }
+    float noise(vec2 p){
+      vec2 i = floor(p), f = fract(p);
+      float a = hash(i), b = hash(i+vec2(1,0)), c = hash(i+vec2(0,1)), d = hash(i+vec2(1,1));
+      vec2 u = f*f*(3.0-2.0*f);
+      return mix(mix(a,b,u.x), mix(c,d,u.x), u.y);
+    }
+
+    // HSV helpers
+    vec3 rgb2hsv(vec3 c){
+      vec4 K = vec4(0.0, -1.0/3.0, 2.0/3.0, -1.0);
+      vec4 p = mix(vec4(c.bg,K.wz), vec4(c.gb,K.xy), step(c.b,c.g));
+      vec4 q = mix(vec4(p.xyw,c.r), vec4(c.r,p.yzx), step(p.x,c.r));
+      float d = q.x - min(q.w,q.y);
+      float e = 1.0e-10;
+      return vec3(abs(q.z + (q.w-q.y)/(6.0*d+e)), d/(q.x+e), q.x);
+    }
+    vec3 hsv2rgb(vec3 c){
+      vec4 K = vec4(1.0, 2.0/3.0, 1.0/3.0, 3.0);
+      vec3 p = abs(fract(c.xxx + K.xyz)*6.0 - K.www);
+      return c.z * mix(K.xxx, clamp(p-K.xxx,0.0,1.0), c.y);
+    }
+
+    // Map screen uv -> video uv (cover fit + zoom)
+    vec2 coverUV(vec2 uv){
+      float sa = u_res.x / u_res.y;
+      float va = u_vidRes.x / u_vidRes.y;
+      vec2 s = vec2(1.0);
+      if (sa > va) s.y = va / sa;
+      else         s.x = sa / va;
+      vec2 o = (1.0 - s) * 0.5;
+      vec2 vu = o + uv * s;
+      // zoom about center
+      vu = (vu - 0.5) / u_zoom + 0.5;
+      return vu;
+    }
+
+    vec4 sampleVid(vec2 uv){
+      vec2 vu = coverUV(uv);
+      vu = clamp(vu, vec2(0.002), vec2(0.998));
+      return texture2D(u_tex, vu);
+    }
+
+    void main(){
+      vec2 uv = v_uv;
+
+      // --- Slit-scan smear: shift each stripe along angle by time/noise ---
+      if (u_smearOn > 0.5) {
+        float a = radians(u_smearAngle);
+        vec2 dir = vec2(cos(a), sin(a));
+        float coord = dot(uv - 0.5, vec2(-dir.y, dir.x)); // perpendicular stripe coord
+        float offset = (noise(vec2(coord*60.0, u_time*0.3)) - 0.5) * u_smearAmt;
+        uv += dir * offset;
+      }
+
+      // --- Scribble displacement via noise field ---
+      if (u_displaceOn > 0.5) {
+        float nx = noise(uv * u_displaceScale + u_time*0.3);
+        float ny = noise(uv * u_displaceScale + 13.7 + u_time*0.3);
+        uv += (vec2(nx,ny) - 0.5) * u_displaceAmt;
+      }
+
+      // --- Chroma shift (RGB split) ---
+      vec3 col;
+      if (u_chromaOn > 0.5) {
+        vec2 dir = vec2(cos(u_time*0.2), sin(u_time*0.2)) * u_chromaAmt;
+        col.r = sampleVid(uv + dir).r;
+        col.g = sampleVid(uv).g;
+        col.b = sampleVid(uv - dir).b;
+      } else {
+        col = sampleVid(uv).rgb;
+      }
+
+      // --- Flow streaks: march along a noise-driven direction field ---
+      // Produces abstract flowing lines that fully abstract the source.
+      if (u_streaksOn > 0.5) {
+        vec2 p = uv;
+        vec3 acc = vec3(0.0);
+        float wsum = 0.0;
+        // backward walk
+        for (int i = 0; i < 18; i++) {
+          float fi = float(i);
+          float ang = noise(p * u_streakScale + u_time * u_streakFlow * 0.1) * 6.2831853 * 2.0;
+          vec2 fdir = vec2(cos(ang), sin(ang));
+          p -= fdir * (u_streakLen / 18.0);
+          float w = 1.0 - fi / 18.0;
+          acc += sampleVid(p).rgb * w;
+          wsum += w;
+        }
+        // forward walk
+        vec2 q = uv;
+        for (int i = 0; i < 18; i++) {
+          float fi = float(i);
+          float ang = noise(q * u_streakScale + u_time * u_streakFlow * 0.1) * 6.2831853 * 2.0;
+          vec2 fdir = vec2(cos(ang), sin(ang));
+          q += fdir * (u_streakLen / 18.0);
+          float w = 1.0 - fi / 18.0;
+          acc += sampleVid(q).rgb * w;
+          wsum += w;
+        }
+        vec3 streaked = acc / max(wsum, 0.001);
+        col = mix(col, streaked, u_streakAmt);
+      }
+
+      // --- Pixel sort (fake): replace dark rows with shifted brighter sample ---
+      if (u_sortOn > 0.5) {
+        float lum = dot(col, vec3(0.299,0.587,0.114));
+        if (lum < u_sortThr) {
+          // stretch horizontally from nearest bright pixel
+          vec3 acc = col;
+          float dx = 0.002;
+          for (int i = 1; i < 24; i++) {
+            vec2 sUV = uv + vec2(dx*float(i), 0.0);
+            vec3 s = sampleVid(sUV).rgb;
+            float sl = dot(s, vec3(0.299,0.587,0.114));
+            if (sl > u_sortThr) { acc = s; break; }
+          }
+          col = mix(col, acc, 0.9);
+        }
+      }
+
+      // --- Posterize ---
+      if (u_posterOn > 0.5) {
+        float l = max(u_posterLvl, 2.0);
+        col = floor(col * l) / l;
+      }
+
+      // --- Hue / saturation ---
+      vec3 hsv = rgb2hsv(col);
+      hsv.x = fract(hsv.x + u_hue/360.0);
+      hsv.y *= u_sat;
+      col = hsv2rgb(hsv);
+
+      // --- Scanlines ---
+      if (u_scanOn > 0.5) {
+        float s = sin(uv.y * u_res.y * 1.2) * 0.5 + 0.5;
+        col *= mix(1.0, s, u_scanAmt);
+      }
+
+      // --- Grain ---
+      if (u_grainOn > 0.5) {
+        float g = hash(uv * u_res + u_time*60.0) - 0.5;
+        col += g * u_grainAmt;
+      }
+
+      // --- Pure lines: procedural hatching warped by video flow ---
+      // Replaces col entirely with abstract line art. Underlying source
+      // becomes invisible as content — only its motion drives the lines.
+      if (u_linesOn > 0.5) {
+        // Sample current video luminance + a second offset sample for flow
+        float lumA = dot(sampleVid(uv).rgb, vec3(0.299,0.587,0.114));
+        float lumB = dot(sampleVid(uv + vec2(0.01, 0.01)).rgb, vec3(0.299,0.587,0.114));
+
+        // Build a flow angle from animated noise + a low-freq video gradient
+        float baseAng = noise(uv * u_linesScale + u_time * u_linesFlow * 0.15) * 6.2831853 * 2.0;
+        float ang = baseAng + (lumB - lumA) * 8.0;
+        vec2 perp = vec2(-sin(ang), cos(ang));
+
+        // Stripe coordinate along the perpendicular direction
+        float stripe = dot(uv - 0.5, perp) * u_linesDensity;
+
+        // Warp stripe phase by video luminance + slow noise — this is what
+        // makes the lines bend with the source motion.
+        float wn = noise(uv * (u_linesScale * 0.5) + 17.3 + u_time * u_linesFlow * 0.1);
+        stripe += (lumA - 0.5) * u_linesWarp * 4.0 + (wn - 0.5) * u_linesWarp * 2.0;
+
+        float band = abs(fract(stripe) - 0.5) * 2.0;
+        float line = smoothstep(u_linesThick + 0.04, u_linesThick - 0.04, band);
+
+        // Anti-aliased contrast
+        vec3 bg = mix(vec3(0.5), vec3(0.02), u_linesContrast);
+        vec3 fg = mix(vec3(0.5), vec3(0.98), u_linesContrast);
+        col = mix(bg, fg, line);
+      }
+
+      // --- Readability veil (darken + desaturate) ---
+      float gray = dot(col, vec3(0.299,0.587,0.114));
+      col = mix(col, vec3(gray), u_desat);
+      col *= (1.0 - u_veil);
+
+      // Subtle vignette to anchor
+      float vig = smoothstep(1.4, 0.35, length((uv-0.5)*vec2(u_res.x/u_res.y,1.0)));
+      col *= mix(0.75, 1.0, vig);
+
+      gl_FragColor = vec4(col, 1.0);
+    }
+  `;
+
+  // Bloom: bright-pass + blur + additive back onto current canvas via alpha
+  const FS_BRIGHT = `
+    precision highp float;
+    varying vec2 v_uv;
+    uniform sampler2D u_tex; uniform float u_thr;
+    void main(){
+      vec3 c = texture2D(u_tex, v_uv).rgb;
+      float lum = dot(c, vec3(0.299,0.587,0.114));
+      float w = smoothstep(u_thr, u_thr+0.1, lum);
+      gl_FragColor = vec4(c * w, 1.0);
+    }
+  `;
+  const FS_BLUR = `
+    precision highp float;
+    varying vec2 v_uv;
+    uniform sampler2D u_tex; uniform vec2 u_dir;
+    void main(){
+      vec3 c = vec3(0.0);
+      c += texture2D(u_tex, v_uv + u_dir * -3.0).rgb * 0.05;
+      c += texture2D(u_tex, v_uv + u_dir * -2.0).rgb * 0.12;
+      c += texture2D(u_tex, v_uv + u_dir * -1.0).rgb * 0.20;
+      c += texture2D(u_tex, v_uv                ).rgb * 0.26;
+      c += texture2D(u_tex, v_uv + u_dir *  1.0).rgb * 0.20;
+      c += texture2D(u_tex, v_uv + u_dir *  2.0).rgb * 0.12;
+      c += texture2D(u_tex, v_uv + u_dir *  3.0).rgb * 0.05;
+      gl_FragColor = vec4(c, 1.0);
+    }
+  `;
+  const FS_COMP = `
+    precision highp float;
+    varying vec2 v_uv;
+    uniform sampler2D u_base; uniform sampler2D u_bloom;
+    uniform float u_str;
+    void main(){
+      vec3 b = texture2D(u_base, v_uv).rgb;
+      vec3 g = texture2D(u_bloom, v_uv).rgb * u_str;
+      gl_FragColor = vec4(b + g, 1.0);
+    }
+  `;
+
+  function compile(type, src){
+    const s = gl.createShader(type);
+    gl.shaderSource(s, src); gl.compileShader(s);
+    if (!gl.getShaderParameter(s, gl.COMPILE_STATUS)) {
+      console.error('shader compile:', gl.getShaderInfoLog(s), src);
+      return null;
+    }
+    return s;
+  }
+  function makeProg(vs, fs){
+    const p = gl.createProgram();
+    gl.attachShader(p, compile(gl.VERTEX_SHADER, vs));
+    gl.attachShader(p, compile(gl.FRAGMENT_SHADER, fs));
+    gl.linkProgram(p);
+    if (!gl.getProgramParameter(p, gl.LINK_STATUS)) console.error(gl.getProgramInfoLog(p));
+    return p;
+  }
+  const progMain = makeProg(VS, FS_MAIN);
+  const progBright = makeProg(VS, FS_BRIGHT);
+  const progBlur = makeProg(VS, FS_BLUR);
+  const progComp = makeProg(VS, FS_COMP);
+
+  // Fullscreen quad
+  const quad = gl.createBuffer();
+  gl.bindBuffer(gl.ARRAY_BUFFER, quad);
+  gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1,-1, 1,-1, -1,1, -1,1, 1,-1, 1,1]), gl.STATIC_DRAW);
+  function bindAttrib(p){
+    const loc = gl.getAttribLocation(p, 'a_pos');
+    gl.enableVertexAttribArray(loc);
+    gl.vertexAttribPointer(loc, 2, gl.FLOAT, false, 0, 0);
+  }
+
+  // Video texture
+  const vidTex = gl.createTexture();
+  gl.bindTexture(gl.TEXTURE_2D, vidTex);
+  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+
+  // FBOs for bloom (half-res)
+  function makeFBO(w, h) {
+    const tex = gl.createTexture();
+    gl.bindTexture(gl.TEXTURE_2D, tex);
+    gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, w, h, 0, gl.RGBA, gl.UNSIGNED_BYTE, null);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+    const fbo = gl.createFramebuffer();
+    gl.bindFramebuffer(gl.FRAMEBUFFER, fbo);
+    gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, tex, 0);
+    gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+    return { fbo, tex, w, h };
+  }
+  let base = null, bA = null, bB = null;
+  const dpr = Math.min(window.devicePixelRatio || 1, 1.25);
+
+  function resize(){
+    const w = Math.floor(innerWidth * dpr);
+    const h = Math.floor(innerHeight * dpr);
+    canvas.width = w; canvas.height = h;
+    gl.viewport(0,0,w,h);
+    base = makeFBO(w, h);
+    bA = makeFBO(Math.floor(w/2), Math.floor(h/2));
+    bB = makeFBO(Math.floor(w/2), Math.floor(h/2));
+  }
+  resize();
+  addEventListener('resize', resize);
+
+  // --- Render loop ---
+  const U = name => {
+    const cache = U.cache || (U.cache = {});
+    if (cache[name]) return cache[name];
+    const p = gl.getCurrentProgram ? gl.getCurrentProgram() : null;
+    return null;
+  };
+  const uL = (prog, name) => gl.getUniformLocation(prog, name);
+
+  const start = performance.now();
+  let readyFrames = 0;
+  const reveal = window.__revealPage;
+  function frame(){
+    const t = (performance.now() - start) / 1000;
+    video.playbackRate = Math.max(0.1, T.speed);
+
+    // Upload video frame
+    if (video.readyState >= 2) {
+      gl.bindTexture(gl.TEXTURE_2D, vidTex);
+      gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, true);
+      try {
+        gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, video);
+        if (++readyFrames === 3) reveal();
+      } catch(e){}
+    }
+
+    // --- Main pass → base FBO ---
+    gl.bindFramebuffer(gl.FRAMEBUFFER, base.fbo);
+    gl.viewport(0,0, base.w, base.h);
+    gl.useProgram(progMain);
+    bindAttrib(progMain);
+    gl.bindBuffer(gl.ARRAY_BUFFER, quad);
+    gl.activeTexture(gl.TEXTURE0);
+    gl.bindTexture(gl.TEXTURE_2D, vidTex);
+    gl.uniform1i(uL(progMain,'u_tex'), 0);
+    gl.uniform2f(uL(progMain,'u_res'), base.w, base.h);
+    gl.uniform2f(uL(progMain,'u_vidRes'), video.videoWidth || 16, video.videoHeight || 9);
+    gl.uniform1f(uL(progMain,'u_time'), t);
+    gl.uniform1f(uL(progMain,'u_zoom'), T.zoom);
+    gl.uniform1f(uL(progMain,'u_hue'), T.hue);
+    gl.uniform1f(uL(progMain,'u_sat'), T.sat);
+    gl.uniform1f(uL(progMain,'u_smearOn'), T.smearOn?1:0);
+    gl.uniform1f(uL(progMain,'u_smearAmt'), T.smearAmt);
+    gl.uniform1f(uL(progMain,'u_smearAngle'), T.smearAngle);
+    gl.uniform1f(uL(progMain,'u_posterOn'), T.posterOn?1:0);
+    gl.uniform1f(uL(progMain,'u_posterLvl'), T.posterLvl);
+    gl.uniform1f(uL(progMain,'u_chromaOn'), T.chromaOn?1:0);
+    gl.uniform1f(uL(progMain,'u_chromaAmt'), T.chromaAmt);
+    gl.uniform1f(uL(progMain,'u_displaceOn'), T.displaceOn?1:0);
+    gl.uniform1f(uL(progMain,'u_displaceAmt'), T.displaceAmt);
+    gl.uniform1f(uL(progMain,'u_displaceScale'), T.displaceScale);
+    gl.uniform1f(uL(progMain,'u_sortOn'), T.sortOn?1:0);
+    gl.uniform1f(uL(progMain,'u_sortThr'), T.sortThr);
+    gl.uniform1f(uL(progMain,'u_streaksOn'), T.streaksOn?1:0);
+    gl.uniform1f(uL(progMain,'u_streakAmt'), T.streakAmt);
+    gl.uniform1f(uL(progMain,'u_streakLen'), T.streakLen);
+    gl.uniform1f(uL(progMain,'u_streakScale'), T.streakScale);
+    gl.uniform1f(uL(progMain,'u_streakFlow'), T.streakFlow);
+    gl.uniform1f(uL(progMain,'u_linesOn'), T.linesOn?1:0);
+    gl.uniform1f(uL(progMain,'u_linesDensity'), T.linesDensity);
+    gl.uniform1f(uL(progMain,'u_linesThick'), T.linesThick);
+    gl.uniform1f(uL(progMain,'u_linesWarp'), T.linesWarp);
+    gl.uniform1f(uL(progMain,'u_linesScale'), T.linesScale);
+    gl.uniform1f(uL(progMain,'u_linesFlow'), T.linesFlow);
+    gl.uniform1f(uL(progMain,'u_linesContrast'), T.linesContrast);
+    gl.uniform1f(uL(progMain,'u_grainOn'), T.grainOn?1:0);
+    gl.uniform1f(uL(progMain,'u_grainAmt'), T.grainAmt);
+    gl.uniform1f(uL(progMain,'u_scanOn'), T.scanOn?1:0);
+    gl.uniform1f(uL(progMain,'u_scanAmt'), T.scanAmt);
+    gl.uniform1f(uL(progMain,'u_veil'), T.veil);
+    gl.uniform1f(uL(progMain,'u_desat'), T.desat);
+    gl.drawArrays(gl.TRIANGLES, 0, 6);
+
+    // --- Bloom chain (only if on) ---
+    if (T.bloomOn) {
+      // Bright-pass base → bA
+      gl.bindFramebuffer(gl.FRAMEBUFFER, bA.fbo);
+      gl.viewport(0,0, bA.w, bA.h);
+      gl.useProgram(progBright);
+      bindAttrib(progBright);
+      gl.activeTexture(gl.TEXTURE0);
+      gl.bindTexture(gl.TEXTURE_2D, base.tex);
+      gl.uniform1i(uL(progBright,'u_tex'), 0);
+      gl.uniform1f(uL(progBright,'u_thr'), T.bloomThr);
+      gl.drawArrays(gl.TRIANGLES, 0, 6);
+
+      // Blur H: bA → bB
+      gl.bindFramebuffer(gl.FRAMEBUFFER, bB.fbo);
+      gl.viewport(0,0, bB.w, bB.h);
+      gl.useProgram(progBlur);
+      bindAttrib(progBlur);
+      gl.bindTexture(gl.TEXTURE_2D, bA.tex);
+      gl.uniform1i(uL(progBlur,'u_tex'), 0);
+      gl.uniform2f(uL(progBlur,'u_dir'), 1/bA.w, 0);
+      gl.drawArrays(gl.TRIANGLES, 0, 6);
+
+      // Blur V: bB → bA
+      gl.bindFramebuffer(gl.FRAMEBUFFER, bA.fbo);
+      gl.useProgram(progBlur);
+      bindAttrib(progBlur);
+      gl.bindTexture(gl.TEXTURE_2D, bB.tex);
+      gl.uniform1i(uL(progBlur,'u_tex'), 0);
+      gl.uniform2f(uL(progBlur,'u_dir'), 0, 1/bB.h);
+      gl.drawArrays(gl.TRIANGLES, 0, 6);
+    }
+
+    // --- Composite to screen ---
+    gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+    gl.viewport(0,0, canvas.width, canvas.height);
+    gl.useProgram(progComp);
+    bindAttrib(progComp);
+    gl.activeTexture(gl.TEXTURE0);
+    gl.bindTexture(gl.TEXTURE_2D, base.tex);
+    gl.uniform1i(uL(progComp,'u_base'), 0);
+    gl.activeTexture(gl.TEXTURE1);
+    gl.bindTexture(gl.TEXTURE_2D, T.bloomOn ? bA.tex : base.tex);
+    gl.uniform1i(uL(progComp,'u_bloom'), 1);
+    gl.uniform1f(uL(progComp,'u_str'), T.bloomOn ? T.bloomStr : 0);
+    gl.drawArrays(gl.TRIANGLES, 0, 6);
+
+    requestAnimationFrame(frame);
+  }
+  frame();
+
+  // Expose for tweaks panel
+  window.__setSource = setSource;
+})();
+</script>
+
+<!-- ── Hover preview ─────────────────────────────────── -->
+<script>
+(() => {
+  const preview = document.getElementById('preview');
+  const frames = [...preview.querySelectorAll('.frame')];
+  const links = [...document.querySelectorAll('.project a')];
+
+  // ── Case study content ──
+  const CASES = {
+    axios: {
+      kicker: 'Case Study · 01',
+      title: 'Axios / AI Newsroom',
+      sub: 'Elevating digital news delivery through AI‑powered tools for both consumers and newsrooms.',
+      facts: [['Year','2024'],['Domain','News · Media'],['Focus','AI tooling']],
+      img: 'assets/projects/axios.jpg',
+      body: [
+        ['Overview', 'At Axios, I led the design direction of many parts of the digital news company, leveraging my expertise as a product designer and developer to enhance both user-facing platforms and internal tools.'],
+        [null, 'My work spanned the entire product ecosystem. I launched a multi-brand design system, consolidated a set of fragmented internal tools to create a cohesive operating system, and created zero-to-one experiences balancing cutting-edge technology with journalistic integrity and user privacy, elevating Axios’s position as a leader in modern digital news delivery.'],
+        [null, 'Note: I served as Lead Product Designer for all work shown here. If you’re interested in learning more, I can go deeper on these projects in an interview.'],
+      ],
+    },
+    intuit: {
+      kicker: 'Case Study · 02',
+      title: 'Intuit / QuickBooks AppConnect',
+      sub: 'Extending the utility of small businesses to help them compete with major retailers.',
+      facts: [['Year','2023'],['Domain','SMB · Fintech'],['Focus','Platform · Ecosystem']],
+      img: 'assets/projects/intuit.jpg',
+      body: [
+        ['Overview', 'I led the design and research of Intuit’s first consumer automation platform for QuickBooks. What was once a project to tap into the third-party developer market’s profits quickly became an effort to help small businesses enter the omnichannel during the COVID-19 pandemic.'],
+        ['Introduction', 'My team at the Intuit Developer Group (IDG) maintains the Intuit Design System, all API documentation for third-party QuickBooks developers, and internal automation efforts. IDG found that creating third-party solutions for QuickBooks is a worldwide, multi-million dollar industry, and Intuit wanted a piece of that pie. Our objective: build a consumer-friendly, no-code Integration Platform as a Service (IPaaS) to help QuickBooks customers manage and speed up monotonous tasks in their workflows.'],
+        ['What exactly is an IPaaS platform?', 'An IPaaS platform is an API-led, cloud-based architecture that allows two or more APIs to "communicate" with each other. If something happens in one API, the IPaaS triggers an action in the other. This is what we know as automation.'],
+        {img: 'assets/projects/intuit/whatisautomation.jpg', alt: 'Diagram explaining automation'},
+        ['What did we inherit?', 'In 2014, Intuit acquired itDuzzit, a Zapier-like startup, to bring automation to QuickBooks. I worked closely with co-founder Steve Mendoza, now Principal Software Engineer at Intuit, to understand his thinking behind itDuzzit, its system, and future vision. They had a proof of concept for consumer automation and a powerful backend we could leverage, but it was clear a small-business owner would have a hard time setting up their automation.'],
+        {img: 'assets/projects/intuit/appconnectlegacy.jpg', cap: 'The legacy AppConnect experience we inherited.'},
+        ['Assumptions', 'Before diving deep into research, I worked with cross-functional partners to gain consensus on preliminary assumptions:'],
+        {list: ['Small businesses would confuse automation for artificial intelligence.', 'Small businesses haven’t spent much time or money investing in automation.', 'Small businesses are intimidated by automation.', 'Businesses spend too much time on repetitive admin work and want to speed it up.', 'Many small businesses were short-staffed or struggling from worldwide lockdown.']},
+        ['User research', 'I spoke to customers about their perception of automation and its implications for their business, and probed how each industry uses applications to run its processes. We learned small businesses know what automation is. What they didn’t know was how to get started. Some looked at tools like Zapier, but learning a new platform and paying for it introduced an opportunity cost.'],
+        [null, 'Small businesses were not intimidated by automation, though they didn’t see how it would work for their specific industry; automation is not one size fits all. We also confirmed that small businesses were hurting significantly: they couldn’t compete with Amazon and Walmart and knew they needed to diversify into e-commerce.'],
+        {img: 'assets/projects/intuit/interviewcontext.jpg', cap: 'Interview context and themes.'},
+        ['How data flows through small businesses', 'We learned how data flows through a business and the industry-specific apps that appear (CRMs, POS systems), common business-standard apps like Google Sheets or Slack, and marketing tools. This research informed the logistical challenges small businesses face and helped prioritize what apps would make our MVP: Shopify, ShipStation, and others in the e-commerce stack.'],
+        {img: 'assets/projects/intuit/dataflow.jpg', alt: 'Data flow through a small business'},
+        ['Clarifying the problem', 'The problem wasn’t whether small businesses wanted automation or knew what it was. SMBs were unsure if automation was worth their time and met their specific contexts. Instead of replicating third-party services, we saw an opportunity to leverage our substantial third-party developer pool to create personalized automation for customers.'],
+        ['Competitive audit', 'In parallel with interviews, we audited primary and secondary suites of applications fitting the same use cases, to inspire requirements and ground design explorations.'],
+        {img: 'assets/projects/intuit/zapierui.jpg', cap: 'Zapier commands the lead in consumer automation thanks to comforting copy and expectation-setting conventions.'},
+        {img: 'assets/projects/intuit/moreui.jpg', cap: 'These apps include quick-start templates to lessen cognitive load in the creation process.'},
+        ['Requirements and user flow', 'I coordinated with my PM early to conceptualize feature requirements and advocated for engineering to join those meetings to voice feasibility concerns. Through these conversations we created a user flow for the ideal state, covering the creation and setup of automation.'],
+        {img: 'assets/projects/intuit/userflow.jpg', alt: 'User flow for automation creation'},
+        ['Design exploration', 'The main challenge was gauging how much modularity to introduce in the initial stages of the journey. The more small moving parts you show, the more arduous the task seems, but fail to present enough value and there’s no reason to adopt automation at all. Conversations at this stage revolved around showing the value proposition quickly while inspiring action.'],
+        {img: 'assets/projects/intuit/wireframe1.jpg', alt: 'Early wireframe exploration'},
+        {img: 'assets/projects/intuit/wireframe2.jpg', alt: 'Wireframe iteration'},
+        ['Content design', 'I worked with Christiana Gunn, a senior content designer on the QuickBooks team, to identify a conceptual model that helps users visualize automation. Through conversations with small business owners, we agreed automation is best described as "someone doing something for you," so the content reflects the feeling of the platform taking the wheel after setup.'],
+        {img: 'assets/projects/intuit/contentdesign1.jpg', alt: 'Content design exploration'},
+        {img: 'assets/projects/intuit/contentdesign2.jpg', alt: 'Conceptual model copy'},
+        ['Showcasing possibilities', 'Some automation sequences are intentional, others are a discovered requirement. So I designed a component (with guidance from the QuickBooks Design System team) to show the "art of the possible."'],
+        {img: 'assets/projects/intuit/quickstartcomponent.jpg', cap: 'Quick-start component showing the art of the possible.'},
+        ['Connecting apps flow', 'We segmented the automation creation and configuration process into separate screens to lower the chance of users feeling overwhelmed. After selecting action and trigger apps, the user connects them through an OAuth2 flow, familiar from "Sign in with Google" buttons. I also designed a flow for apps requiring a manually-entered secret key.'],
+        {img: 'assets/projects/intuit/oauth2screen.jpg', alt: 'OAuth2 connection flow'},
+        ['Systems design vs. UI design', 'The configuration screen looks different for every combination of apps. Designing every configuration component manually wouldn’t scale, so I designed the system for how partner apps’ custom integrations appear on the configuration screen. Partner apps create the integration commands themselves, because it’s in their best interest for QuickBooks to work well with their apps, a method already proven by the QuickBooks app store.'],
+        {img: 'assets/projects/intuit/config.jpg', alt: 'Configuration screen system'},
+        {img: 'assets/projects/intuit/flexbox.jpg', cap: 'The flexible layout system behind partner-defined configuration.'},
+        ['Return state', 'After a user creates their first automation, we assume they understand the feature, so we replace the education component with a utility component to manage automation at a glance: turn it on/off, view logs, reconnect or switch auth tokens, and delete entirely.'],
+        {img: 'assets/projects/intuit/returnstate.jpg', alt: 'Dashboard return state'},
+        ['Working with developers', 'Design and development worked closely to voice feasibility concerns and create workarounds. For handoff I presented annotated wireframe process flows, with detailed mocks of how designs conform to QuickBooks design system paradigms.'],
+        {img: 'assets/projects/intuit/annotated.jpg', cap: 'Annotated handoff flows for engineering.'},
+        ['Things I would have done differently', 'There were opportunities for quick, valuable moments of delight, but executing automation mattered more than micro-interactions. One delighter I’d have loved to try: a "human hours saved" message, similar to Stripe’s Climate convention, reassuring users their automation was making an impact. It needed research time I unfortunately didn’t have.'],
+        {img: 'assets/projects/intuit/stripe.jpg', cap: 'Stripe Climate, the convention that inspired the idea.'},
+        ['Things I learned', 'Design systems people are your friends: extend a hand when you can’t find a component to fit your context. If they object, it’s probably for good reason. Research is non-negotiable: if generative research had been axed from the timeline, the product would have been a mess before it started. And your senior designers have seen some things. Think for yourself, but sometimes lean back and let their experience work for you and your users.'],
+      ],
+    },
+    pru: {
+      kicker: 'Case Study · 03',
+      title: 'Prudential / PGIM',
+      sub: 'Taxonomy, design system, SIA payments flow, and PGIM usability across the finance giant.',
+      facts: [['Year','2022'],['Domain','Finance'],['Focus','Design systems · UX']],
+      img: 'assets/projects/prudential.jpg',
+      body: [
+        ['Overview', 'While at Prudential, I had the opportunity to learn how a large company operates, in contrast with the scrappy startups and student orgs I was previously involved with. I was there for the better part of a year and was involved with some cool work.'],
+        ['LINK by Prudential', 'I conducted an audit of LINK’s analytic reports and instigated conversations with leadership to redesign parts of the robo-advisor.'],
+        {img: 'assets/projects/pru/linkbanner.jpg', alt: 'LINK by Prudential'},
+        ['Prudential taxonomy', 'I was tasked with completely redoing the Prudential.com navigation taxonomy following the acquisition of AssuranceIQ and the introduction of a new healthcare product. I launched a survey to a targeted customer segment to understand what they valued at that arc of their lives, creating a weighted, ranked list of our product categories, and ran card sorting exercises to tighten the third-level navigation IA.'],
+        {img: 'assets/projects/pru/taxonomybanner.jpg', alt: 'Prudential taxonomy work'},
+        ['PGIM redesign', 'After Code&Theory finished their take on the new PGIM.com, I assisted Heather Buchma (design director at PGIM) in running usability tests with in-house finance professionals. The findings informed the later iterations of the design now live.'],
+        {img: 'assets/projects/pru/pgimbanner.jpg', alt: 'PGIM redesign'},
+        ['Design system', 'I was involved in early conversations and research for Prudential’s new design system: interviewing in-house and distributed design and development teams across the organization to prioritize features for the MVP, and running usability testing of the system with designers and developers.'],
+        {img: 'assets/projects/pru/designsystembanner.jpg', alt: 'Prudential design system'},
+        ['Simple Investment Account', 'Prudential was primed to compete with long-term yet liquid investment accounts like Goldman Sachs Marcus and Betterment. I designed and evaluated the payments flow to fund the SIA account, focusing on funding, bank redirects, and error handling (and a weird mail-in edge case).'],
+        {img: 'assets/projects/pru/siabanner.jpg', alt: 'Simple Investment Account payments flow'},
+        ['Design blog contribution', 'I also wrote a blog post to help the next intern ease into the role.'],
+        {img: 'assets/projects/pru/mediumbanner.jpg', alt: 'Design blog post'},
+      ],
+    },
+    way: {
+      kicker: 'Case Study · 04',
+      title: 'Wayfinding / NJIT',
+      sub: "Enhancing wayfinding for NJIT’s Hillier College through eye‑tracking research.",
+      facts: [['Year','2021'],['Domain','Research'],['Focus','Eye‑tracking · Environmental']],
+      img: 'assets/projects/wayfinding.gif',
+      body: [
+        ['Overview', 'An interior design agency approached NJIT with a proposal to enhance Weston Hall’s wayfinding for a high price and no explanation for design decisions. So I gave it a shot with a cross-functional team: an interior designer (Lauren Soriano) and a digital designer (Bryce Short). This project was very different from the web/mobile/VR work I was familiar with, yet used many of the same skills. Like a UI, physical spaces have components that need problem discovery, quant/qual evaluative research, and visual design working in harmony.'],
+        ['Is there a problem?', 'NJIT’s School of Art+Design suffers from a less-than-optimal wayfinding experience for new students and visiting professors. The only signs upon entering are outside the standard monocular human visual field of 60 degrees, so they don’t help navigation at all. Individuals also enter the building on the 3rd floor instead of the first because of a mandatory ramp, with no indication of what floor they’re on.'],
+        {img: 'assets/projects/way/monoocular.jpg', cap: 'Existing signage sits outside the 60° monocular visual field.'},
+        {img: 'assets/projects/way/groundtothird.jpg', cap: 'The ramp drops visitors on the 3rd floor with no indication.'},
+        ['Modeling relevancy of rooms', 'Before considering sign designs or testing methods, we prioritized which rooms mattered most to students and staff. We asked building admins for documents to gauge density, converted a PDF of student schedules into a CSV, and discovered the two highest-traffic rooms were Weston Lecture Halls 1 and 2, so we built the test around them.'],
+        {img: 'assets/projects/way/roomrele.jpg', cap: 'Room relevancy modeled from schedule density data.'},
+        ['Initial eye-tracking test', 'I wanted to see where people gaze and fixate when naturally traversing the building, so I recruited 10 NJIT students rarely in Weston Hall and asked them to perform simple wayfinding tasks wearing a Pupil Labs eye-tracker. Students just walked until they found the room coincidentally, or asked someone they crossed paths with. The test validated that Weston Hall has a wayfinding problem: signage in inaccessible locations, giving minimal contextual information.'],
+        ['Measuring visibility', 'Using the Grasshopper plugin in Rhino, we created isovists from Weston Hall floor plans. Isovists measure visibility in spaces: a floor plan is divided into a grid, and each unit that intersects with another raises the visibility score. Red = high visibility, blue = low. We wanted signs in the path of the 60° visual field, in areas of generally high visibility, so people with limited ability to scan a room can find them with less effort.'],
+        {img: 'assets/projects/way/isopath.gif', alt: 'Isovist path animation'},
+        {img: 'assets/projects/way/isoplot.jpg', cap: 'Isovist visibility plots: red = high visibility, blue = low.'},
+        ['Sign design', 'The old sign was an information dump: available rooms and floors with no context of where you are relative to where you want to be. We designed signs that display relevant information in relation to the building’s structural layout and the floor the user is on.'],
+        {img: 'assets/projects/way/newsigns.jpg', cap: 'New signs, designed around the building’s structure and your position in it.'},
+        ['Sign placement + navigation study', 'Using the density visualization, eye-tracking test, and isovist measures, we placed the new signs in areas with the highest visibility from entrances, then ran one more eye-tracking test and talked with users about their experience. Sign design and placement dramatically shortened the average time to find specific locations, and users felt the experience was natural and convenient. What we needed was more direction, so we designed another iteration.'],
+        {img: 'assets/projects/way/placement1.jpg', alt: 'Sign placement study'},
+        {img: 'assets/projects/way/placement2.jpg', alt: 'Sign placement in high-visibility areas'},
+        {img: 'assets/projects/way/seciteration.jpg', cap: 'The second iteration, adding more directional guidance.'},
+        ['The final product', 'Heavily inspired by NYC subway maps, this iteration adds a map to the directory to help a wayfinder understand their spatial relation to their destination.'],
+        {img: 'assets/projects/way/mapdesign.jpg', alt: 'Final directory with map'},
+        ['What we wished we could have done', 'Floor signs would have helped immensely, taking the cognitive load off mentally positioning your body relative to the sign. Find a destination, follow the floor trail. Unfortunately, constraints are part of life: Weston Hall recommended against them to avoid construction interruptions to day-to-day operations.'],
+      ],
+    },
+  };
+  const ORDER = ['axios','intuit','pru','way'];
+
+  const casePane = document.getElementById('case');
+  const caseClose = document.getElementById('case-close');
+  const caseExpand = document.getElementById('case-expand');
+  const casePrev = document.getElementById('case-prev');
+  const caseNext = document.getElementById('case-next');
+  let openKey = null;
+  let lastTrigger = null;
+  let suppressPreview = false;
+
+  function renderCase(key) {
+    const c = CASES[key];
+    if (!c) return;
+    document.getElementById('case-kicker').textContent = c.kicker;
+    document.getElementById('case-title').textContent = c.title;
+    document.getElementById('case-sub').textContent = c.sub;
+    const facts = document.getElementById('case-facts');
+    facts.innerHTML = '';
+    c.facts.forEach(([k, v]) => {
+      const d = document.createElement('div');
+      d.className = 'fact';
+      const ke = document.createElement('span'); ke.className = 'k'; ke.textContent = k;
+      const ve = document.createElement('span'); ve.className = 'v'; ve.textContent = v;
+      d.appendChild(ke); d.appendChild(ve);
+      facts.appendChild(d);
+    });
+    const hero = document.getElementById('case-hero');
+    hero.src = c.img; hero.alt = c.title;
+    const body = document.getElementById('case-body');
+    body.innerHTML = '';
+    c.body.forEach((item) => {
+      if (Array.isArray(item)) {
+        const [h, p] = item;
+        if (h) { const he = document.createElement('h3'); he.textContent = h; body.appendChild(he); }
+        if (p) { const pe = document.createElement('p'); pe.textContent = p; body.appendChild(pe); }
+      } else if (item.img) {
+        const fig = document.createElement('figure');
+        const im = document.createElement('img');
+        im.src = item.img; im.alt = item.alt || item.cap || ''; im.loading = 'lazy';
+        fig.appendChild(im);
+        if (item.cap) { const fc = document.createElement('figcaption'); fc.textContent = item.cap; fig.appendChild(fc); }
+        body.appendChild(fig);
+      } else if (item.list) {
+        const ul = document.createElement('ul');
+        item.list.forEach(t => { const li = document.createElement('li'); li.textContent = t; ul.appendChild(li); });
+        body.appendChild(ul);
+      }
+    });
+    const i = ORDER.indexOf(key);
+    const prevKey = ORDER[(i - 1 + ORDER.length) % ORDER.length];
+    const nextKey = ORDER[(i + 1) % ORDER.length];
+    casePrev.textContent = '← ' + CASES[prevKey].title.split(' — ')[0].split(' / ')[0];
+    caseNext.textContent = CASES[nextKey].title.split(' — ')[0].split(' / ')[0] + ' →';
+    casePrev.dataset.key = prevKey;
+    caseNext.dataset.key = nextKey;
+  }
+
+  function openCase(key, trigger) {
+    renderCase(key);
+    openKey = key;
+    if (trigger) lastTrigger = trigger;
+    casePane.classList.add('is-open');
+    casePane.scrollTop = 0;
+    preview.classList.remove('is-visible');
+    links.forEach(a => a.setAttribute('aria-current', a.dataset.img === key ? 'true' : 'false'));
+    caseClose.focus();
+  }
+  function closeCase() {
+    casePane.classList.remove('is-open');
+    openKey = null;
+    links.forEach(a => a.setAttribute('aria-current', 'false'));
+    preview.classList.remove('is-visible');
+    frames.forEach(f => f.classList.remove('active'));
+    if (lastTrigger) {
+      suppressPreview = true;
+      lastTrigger.focus();
+      suppressPreview = false;
+      lastTrigger = null;
+    }
+  }
+
+  caseClose.addEventListener('click', closeCase);
+  caseExpand.addEventListener('click', () => {
+    const full = casePane.classList.toggle('is-full');
+    caseExpand.setAttribute('aria-pressed', full ? 'true' : 'false');
+    caseExpand.setAttribute('aria-label', full ? 'Exit full page' : 'Expand to full page');
+    caseExpand.title = full ? 'Collapse' : 'Expand';
+  });
+  document.getElementById('brand-home').addEventListener('click', (e) => {
+    e.preventDefault();
+    if (openKey) closeCase();
+    document.querySelector('.rail').scrollTop = 0;
+  });
+  casePrev.addEventListener('click', () => openCase(casePrev.dataset.key));
+  caseNext.addEventListener('click', () => openCase(caseNext.dataset.key));
+  document.addEventListener('keydown', (e) => {
+    if (e.key !== 'Escape' || !openKey) return;
+    if (casePane.classList.contains('is-full')) { caseExpand.click(); return; }
+    closeCase();
+  });
+
+  function setActive(key){
+    frames.forEach(f => f.classList.toggle('active', f.id === 'frame-'+key));
+  }
+  links.forEach(a => {
+    const show = () => {
+      if (openKey || suppressPreview) return;
+      setActive(a.dataset.img);
+      preview.classList.add('is-visible');
+    };
+    a.addEventListener('pointerenter', show);
+    a.addEventListener('focus', show);
+    a.addEventListener('blur', () => {
+      preview.classList.remove('is-visible');
+    });
+    a.addEventListener('click', (e) => {
+      e.preventDefault();
+      if (openKey === a.dataset.img) { closeCase(); return; }
+      openCase(a.dataset.img, a);
+    });
+  });
+  document.getElementById('projects').addEventListener('pointerleave', () => {
+    preview.classList.remove('is-visible');
+    frames.forEach(f => f.classList.remove('active'));
+  });
+})();
+</script>
+
+<!-- ── Tweaks wiring ─────────────────────────────────── -->
+<script>
+(() => {
+  const T = window.__tweaks;
+  const panel = document.getElementById('tweaks');
+
+  // Format values per key
+  const fmt = {
+    speed: v => v.toFixed(2) + '×',
+    zoom:  v => v.toFixed(2) + '×',
+    hue:   v => Math.round(v) + '°',
+    smearAngle: v => Math.round(v) + '°',
+    posterLvl: v => Math.round(v).toString(),
+    linesDensity: v => Math.round(v).toString(),
+  };
+  function valStr(key, v){
+    return (fmt[key] ? fmt[key](v) : (+v).toFixed((''+v).includes('.') ? 3 : 2));
+  }
+
+  function persist(key, value){
+    T[key] = value;
+    try { window.parent.postMessage({ type:'__edit_mode_set_keys', edits:{ [key]: value } }, '*'); } catch {}
+  }
+
+  // Sliders
+  panel.querySelectorAll('input[type=range]').forEach(input => {
+    const key = input.dataset.key;
+    input.value = T[key];
+    const vId = 'v-' + key;
+    const vEl = document.getElementById(vId);
+    if (vEl) vEl.textContent = valStr(key, T[key]);
+    input.addEventListener('input', e => {
+      const v = +e.target.value;
+      persist(key, v);
+      if (vEl) vEl.textContent = valStr(key, v);
+    });
+  });
+
+  // Toggles
+  panel.querySelectorAll('.toggle').forEach(t => {
+    const key = t.dataset.toggle;
+    if (T[key]) t.classList.add('on');
+    // Dim section when off
+    const sec = t.closest('.section');
+    if (sec) sec.toggleAttribute('data-off', !T[key]);
+    t.addEventListener('click', () => {
+      const next = !T[key];
+      persist(key, next);
+      t.classList.toggle('on', next);
+      if (sec) sec.toggleAttribute('data-off', !next);
+    });
+  });
+
+  // Source select
+  const sel = document.getElementById('src-select');
+  sel.value = T.source;
+  sel.addEventListener('change', e => {
+    persist('source', e.target.value);
+    if (window.__setSource) window.__setSource(e.target.value);
+  });
+
+  // Randomize — shuffle every tweakable value, bias toward "interesting"
+  const btnRand = document.getElementById('btn-randomize');
+  if (btnRand) btnRand.addEventListener('click', () => {
+    const rand = (a, b) => a + Math.random() * (b - a);
+    const coin = (p = 0.5) => Math.random() < p;
+
+    const updates = {
+      zoom: rand(1.0, 1.8),
+      hue: Math.round(rand(0, 360)),
+      sat: rand(0.3, 1.6),
+      smearOn: coin(0.75),
+      smearAmt: rand(0.15, 0.9),
+      smearAngle: Math.round(rand(0, 180)),
+      posterOn: coin(0.25),
+      posterLvl: Math.round(rand(3, 10)),
+      chromaOn: coin(0.65),
+      chromaAmt: rand(0.002, 0.02),
+      displaceOn: coin(0.55),
+      displaceAmt: rand(0.01, 0.08),
+      displaceScale: +rand(2, 10).toFixed(1),
+      sortOn: coin(0.35),
+      sortThr: rand(0.25, 0.7),
+      bloomOn: coin(0.75),
+      bloomThr: rand(0.4, 0.75),
+      bloomStr: rand(0.4, 1.4),
+      grainOn: coin(0.75),
+      grainAmt: rand(0.03, 0.18),
+      scanOn: coin(0.35),
+      scanAmt: rand(0.1, 0.6),
+      veil: rand(0.35, 0.7),
+      desat: rand(0, 0.5),
+    };
+
+    // Apply every value via persist() so EDITMODE block stays in sync
+    Object.entries(updates).forEach(([k, v]) => persist(k, v));
+
+    // Re-sync sliders, value labels, and toggle states
+    panel.querySelectorAll('input[type=range]').forEach(input => {
+      const key = input.dataset.key;
+      if (key in T) {
+        input.value = T[key];
+        const vEl = document.getElementById('v-' + key);
+        if (vEl) vEl.textContent = valStr(key, T[key]);
+      }
+    });
+    panel.querySelectorAll('.toggle').forEach(t => {
+      const key = t.dataset.toggle;
+      t.classList.toggle('on', !!T[key]);
+      const sec = t.closest('.section');
+      if (sec) sec.toggleAttribute('data-off', !T[key]);
+    });
+  });
+
+  // ---- Presets ----
+  const PRESETS = {
+    "lines": {
+      label: "Abstract lines",
+      values: {
+        zoom: 1.2, hue: 0, sat: 1.0,
+        smearOn: false, smearAmt: 0.5, smearAngle: 90,
+        posterOn: false, posterLvl: 6,
+        chromaOn: false, chromaAmt: 0.012,
+        displaceOn: false, displaceAmt: 0.02, displaceScale: 5,
+        sortOn: false, sortThr: 0.45,
+        streaksOn: false, streakAmt: 0.8, streakLen: 0.12, streakScale: 5, streakFlow: 1,
+        linesOn: true, linesDensity: 90, linesThick: 0.4, linesWarp: 0.5, linesScale: 2.5, linesFlow: 0.6, linesContrast: 0.85,
+        bloomOn: true, bloomThr: 0.6, bloomStr: 0.5,
+        grainOn: true, grainAmt: 0.08,
+        scanOn: false, scanAmt: 0.25,
+        veil: 0.35, desat: 0.2,
+      }
+    },
+    "tokenized": {
+      label: "★ Tokenized · Leaf lines",
+      values: {
+        speed: 1.45, zoom: 1.108146586667539, hue: 130, sat: 1.3930717796799699,
+        smearOn: false, smearAmt: 0.5464934948669194, smearAngle: 121,
+        posterOn: true, posterLvl: 9,
+        chromaOn: true, chromaAmt: 0.014034788950899223,
+        displaceOn: true, displaceAmt: 0.03267433808094194, displaceScale: 8.1,
+        sortOn: false, sortThr: 0.3624513105957834,
+        streaksOn: false, streakAmt: 0.8, streakLen: 0.12, streakScale: 5, streakFlow: 1,
+        linesOn: true, linesDensity: 90, linesThick: 0.4, linesWarp: 0.5, linesScale: 2.5, linesFlow: 0.6, linesContrast: 0.85,
+        bloomOn: true, bloomThr: 0.5619970450028355, bloomStr: 0.46895287152284115,
+        grainOn: false, grainAmt: 0.05287363949463554,
+        scanOn: false, scanAmt: 0.20610529978336026,
+        veil: 0.5686215359959417, desat: 0.4761870181592043,
+      }
+    },
+    "current": {
+      label: "Acid poster",
+      values: {
+        zoom: 1.108146586667539, hue: 130, sat: 1.3930717796799699,
+        smearOn: false, smearAmt: 0.5464934948669194, smearAngle: 121,
+        posterOn: true, posterLvl: 9,
+        chromaOn: true, chromaAmt: 0.014034788950899223,
+        displaceOn: true, displaceAmt: 0.03267433808094194, displaceScale: 8.1,
+        sortOn: false, sortThr: 0.3624513105957834,
+        streaksOn: false, streakAmt: 0.8, streakLen: 0.12, streakScale: 5, streakFlow: 1,
+        bloomOn: true, bloomThr: 0.5619970450028355, bloomStr: 0.46895287152284115,
+        grainOn: false, grainAmt: 0.05287363949463554,
+        scanOn: false, scanAmt: 0.20610529978336026,
+        veil: 0.5686215359959417, desat: 0.4761870181592043,
+      }
+    },
+    "clean": {
+      label: "Clean · Untouched",
+      values: {
+        zoom: 1.0, hue: 0, sat: 1.0,
+        smearOn: false, smearAmt: 0.3, smearAngle: 45,
+        posterOn: false, posterLvl: 6,
+        chromaOn: false, chromaAmt: 0.01,
+        displaceOn: false, displaceAmt: 0.02, displaceScale: 4,
+        sortOn: false, sortThr: 0.45,
+        streaksOn: false, streakAmt: 0.8, streakLen: 0.12, streakScale: 5, streakFlow: 1,
+        bloomOn: false, bloomThr: 0.6, bloomStr: 0.8,
+        grainOn: false, grainAmt: 0.08,
+        scanOn: false, scanAmt: 0.25,
+        veil: 0.45, desat: 0.2,
+      }
+    },
+    "mono": {
+      label: "Mono · Noir grain",
+      values: {
+        zoom: 1.15, hue: 0, sat: 0.4,
+        smearOn: false, smearAmt: 0.3, smearAngle: 45,
+        posterOn: false, posterLvl: 6,
+        chromaOn: false, chromaAmt: 0.01,
+        displaceOn: false, displaceAmt: 0.02, displaceScale: 4,
+        sortOn: false, sortThr: 0.45,
+        streaksOn: false, streakAmt: 0.8, streakLen: 0.12, streakScale: 5, streakFlow: 1,
+        bloomOn: true, bloomThr: 0.65, bloomStr: 0.6,
+        grainOn: true, grainAmt: 0.16,
+        scanOn: false, scanAmt: 0.25,
+        veil: 0.55, desat: 0.9,
+      }
+    },
+    "glitch": {
+      label: "Glitch · Sort + smear",
+      values: {
+        zoom: 1.25, hue: 280, sat: 1.1,
+        smearOn: true, smearAmt: 0.65, smearAngle: 90,
+        posterOn: false, posterLvl: 6,
+        chromaOn: true, chromaAmt: 0.02,
+        displaceOn: true, displaceAmt: 0.04, displaceScale: 5,
+        sortOn: true, sortThr: 0.5,
+        streaksOn: false, streakAmt: 0.8, streakLen: 0.12, streakScale: 5, streakFlow: 1,
+        bloomOn: true, bloomThr: 0.55, bloomStr: 0.7,
+        grainOn: true, grainAmt: 0.1,
+        scanOn: true, scanAmt: 0.35,
+        veil: 0.5, desat: 0.1,
+      }
+    },
+  };
+
+  const presetSel = document.getElementById('preset-select');
+  const presetName = document.getElementById('preset-name');
+  const btnSavePreset = document.getElementById('btn-save-preset');
+  const btnDeletePreset = document.getElementById('btn-delete-preset');
+
+  const PRESET_KEYS = [
+    'zoom','hue','sat',
+    'smearOn','smearAmt','smearAngle',
+    'posterOn','posterLvl',
+    'chromaOn','chromaAmt',
+    'displaceOn','displaceAmt','displaceScale',
+    'sortOn','sortThr',
+    'streaksOn','streakAmt','streakLen','streakScale','streakFlow',
+    'linesOn','linesDensity','linesThick','linesWarp','linesScale','linesFlow','linesContrast',
+    'bloomOn','bloomThr','bloomStr',
+    'grainOn','grainAmt',
+    'scanOn','scanAmt',
+    'veil','desat',
+  ];
+
+  const USER_PRESETS_KEY = 'portfolio:userPresets';
+  function loadUserPresets() {
+    try { return JSON.parse(localStorage.getItem(USER_PRESETS_KEY)) || {}; }
+    catch { return {}; }
+  }
+  function saveUserPresets(obj) {
+    try { localStorage.setItem(USER_PRESETS_KEY, JSON.stringify(obj)); } catch {}
+  }
+
+  function renderPresetOptions(selectedId) {
+    if (!presetSel) return;
+    presetSel.innerHTML = '';
+
+    const gBuiltin = document.createElement('optgroup');
+    gBuiltin.label = 'Built-in';
+    Object.entries(PRESETS).forEach(([id, p]) => {
+      const opt = document.createElement('option');
+      opt.value = 'b:' + id; opt.textContent = p.label;
+      gBuiltin.appendChild(opt);
+    });
+    presetSel.appendChild(gBuiltin);
+
+    const user = loadUserPresets();
+    const userEntries = Object.entries(user);
+    if (userEntries.length) {
+      const gUser = document.createElement('optgroup');
+      gUser.label = 'Saved';
+      userEntries.forEach(([id, p]) => {
+        const opt = document.createElement('option');
+        opt.value = 'u:' + id; opt.textContent = p.label;
+        gUser.appendChild(opt);
+      });
+      presetSel.appendChild(gUser);
+    }
+
+    if (selectedId) presetSel.value = selectedId;
+    updateDeleteButton();
+  }
+
+  function updateDeleteButton() {
+    if (!btnDeletePreset || !presetSel) return;
+    btnDeletePreset.disabled = !presetSel.value.startsWith('u:');
+  }
+
+  function applyPresetValues(values) {
+    Object.entries(values).forEach(([k, v]) => persist(k, v));
+    // Re-sync UI
+    panel.querySelectorAll('input[type=range]').forEach(input => {
+      const key = input.dataset.key;
+      if (key in T) {
+        input.value = T[key];
+        const vEl = document.getElementById('v-' + key);
+        if (vEl) vEl.textContent = valStr(key, T[key]);
+      }
+    });
+    panel.querySelectorAll('.toggle').forEach(t => {
+      const key = t.dataset.toggle;
+      t.classList.toggle('on', !!T[key]);
+      const sec = t.closest('.section');
+      if (sec) sec.toggleAttribute('data-off', !T[key]);
+    });
+  }
+
+  if (presetSel) {
+    renderPresetOptions('b:tokenized');
+    presetSel.addEventListener('change', e => {
+      const v = e.target.value;
+      updateDeleteButton();
+      if (v.startsWith('b:')) {
+        const p = PRESETS[v.slice(2)];
+        if (p) applyPresetValues(p.values);
+      } else if (v.startsWith('u:')) {
+        const user = loadUserPresets();
+        const p = user[v.slice(2)];
+        if (p) applyPresetValues(p.values);
+      }
+    });
+  }
+
+  if (btnSavePreset) {
+    btnSavePreset.addEventListener('click', () => {
+      const label = (presetName.value || '').trim();
+      if (!label) { presetName.focus(); return; }
+      const id = 'u_' + Date.now().toString(36);
+      const values = {};
+      PRESET_KEYS.forEach(k => { values[k] = T[k]; });
+      const user = loadUserPresets();
+      user[id] = { label, values };
+      saveUserPresets(user);
+      presetName.value = '';
+      renderPresetOptions('u:' + id);
+    });
+    presetName.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') { e.preventDefault(); btnSavePreset.click(); }
+    });
+  }
+
+  if (btnDeletePreset) {
+    btnDeletePreset.addEventListener('click', () => {
+      const v = presetSel.value;
+      if (!v.startsWith('u:')) return;
+      const id = v.slice(2);
+      const user = loadUserPresets();
+      if (!user[id]) return;
+      if (!confirm('Delete preset "' + user[id].label + '"?')) return;
+      delete user[id];
+      saveUserPresets(user);
+      renderPresetOptions('b:tokenized');
+    });
+  }
+
+  // Edit-mode protocol
+  window.addEventListener('message', (e) => {
+    const d = e.data || {};
+    if (d.type === '__activate_edit_mode') panel.classList.add('is-open');
+    else if (d.type === '__deactivate_edit_mode') panel.classList.remove('is-open');
+  });
+  try { window.parent.postMessage({ type:'__edit_mode_available' }, '*'); } catch {}
+})();
+</script>
+
+</body>
+</html>
