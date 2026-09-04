@@ -23,7 +23,7 @@ then open http://localhost:8000. (Opening `index.html` via `file://` won't work 
 
 ## How it works
 
-Each page load runs a 4-way lottery for the background: the video-texture shader (default look: "Tokenized · Leaf lines" over `abstract3.mp4`), Signal Wash in Liquidline or Ink Wash, or CrazyDMT in BlueCrazyDMT (riot layer enabled) over `abstract5.mp4`. A minimal loader covers the page until the winning engine has painted real frames (4s safety timeout).
+Each page load runs a 3-way lottery for the background: the video-texture shader (default look: "Tokenized · Leaf lines" over `abstract3.mp4`), Signal Wash in Liquidline, or CrazyDMT in BlueCrazyDMT (riot layer enabled) over `abstract5.mp4`. A minimal loader covers the page until the winning engine has painted real frames (4s safety timeout).
 
 Signal Wash and CrazyDMT both mount into `#sw-bg`, which inherits the shared fade-in; the video-texture shader owns `#shader-canvas` and `<video id="src">`. Only the video-texture shader is wired to the Tweaks panel.
 
