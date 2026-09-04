@@ -978,10 +978,9 @@
 </script>
 <script src="assets/signal-wash-bg.js"></script>
 <script src="assets/shaders/crazy-dmt-bg.js"></script>
-<script src="assets/shaders/lumen-drift-bg.js"></script>
 <script>
 (() => {
-  const MODES = ['video', 'Liquidline', 'BlueCrazyDMT', 'Lumen Drift'];
+  const MODES = ['video', 'Liquidline', 'BlueCrazyDMT'];
   // ?bg=<mode> forces a background (e.g. ?bg=BlueCrazyDMT); otherwise lottery.
   const forced = new URLSearchParams(location.search).get('bg');
   const pick = MODES.includes(forced) ? forced
@@ -1010,12 +1009,6 @@
     if (!dmt) { window.__revealPage(); return; }   // no WebGL: don't strand the loader
     if (dmt.video.readyState >= 2) reveal();       // wait for real frames, not a black canvas
     else dmt.video.addEventListener('loadeddata', reveal, { once: true });
-    return;
-  }
-  if (pick === 'Lumen Drift') {
-    const ld = LumenDrift.attach(host, {});
-    if (!ld) { window.__revealPage(); return; }  // no WebGL: don't strand the loader
-    reveal();
     return;
   }
   SignalWash.attach(host, { preset: pick, interact: 'full' });
