@@ -16,7 +16,7 @@ then open http://localhost:8000. (Opening `index.html` via `file://` won't work 
 
 - `index.html` — the entire site: layout, styles, WebGL background engine, case-study content, and interactions.
 - `assets/signal-wash-bg.js` — Signal Wash generative-art engine (third-party kit, do not modify; attached via `SignalWash.attach`).
-- `assets/shaders/lumen-drift-bg.js` — Lumen Drift engine (first-party): slow particle metaballs whose analytic gradient refracts a procedural gradient backdrop, with chromatic dispersion. Attached via `LumenDrift.attach`.
+- `assets/shaders/lumen-drift-bg.js` — Lumen Drift engine (first-party): slow particle metaballs whose analytic gradient refracts a procedural gradient backdrop, with chromatic dispersion, a slow global hue drift, and a second additive pass of twinkling dust motes. Attached via `LumenDrift.attach`.
 - `assets/shaders/crazy-dmt-bg.js` — CrazyDMT glitch engine (third-party kit, do not modify; attached via `CrazyDMT.attach`). Ships two presets, `BlueCrazyDMT` and `CrazyDMT`; the lottery runs `BlueCrazyDMT` with `riotOn: true` (which makes it equivalent to `CrazyDMT`).
 - `assets/video/abstract1–6.mp4` — source loops for the video-shader background.
 - `assets/projects/` — project banners plus per-case-study images (`intuit/`, `pru/`, `way/`).
