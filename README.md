@@ -16,6 +16,7 @@ then open http://localhost:8000. (Opening `index.html` via `file://` won't work 
 
 - `index.html` — the entire site: layout, styles, WebGL background engine, case-study content, and interactions.
 - `assets/signal-wash-bg.js` — Signal Wash generative-art engine (third-party kit, do not modify; attached via `SignalWash.attach`).
+- `assets/shaders/lumen-drift-bg.js` — Lumen Drift engine (first-party): slow particle metaballs whose analytic gradient refracts a procedural gradient backdrop, with chromatic dispersion. Attached via `LumenDrift.attach`.
 - `assets/shaders/crazy-dmt-bg.js` — CrazyDMT glitch engine (third-party kit, do not modify; attached via `CrazyDMT.attach`). Ships two presets, `BlueCrazyDMT` and `CrazyDMT`; the lottery runs `BlueCrazyDMT` with `riotOn: true` (which makes it equivalent to `CrazyDMT`).
 - `assets/video/abstract1–6.mp4` — source loops for the video-shader background.
 - `assets/projects/` — project banners plus per-case-study images (`intuit/`, `pru/`, `way/`).
@@ -23,7 +24,7 @@ then open http://localhost:8000. (Opening `index.html` via `file://` won't work 
 
 ## How it works
 
-Each page load runs a 3-way lottery for the background: the video-texture shader (default look: "Tokenized · Leaf lines" over `abstract3.mp4`), Signal Wash in Liquidline, or CrazyDMT in BlueCrazyDMT (riot layer enabled) over `abstract5.mp4`. A minimal loader covers the page until the winning engine has painted real frames (4s safety timeout).
+Each page load runs a 4-way lottery for the background: the video-texture shader (default look: "Tokenized · Leaf lines" over `abstract3.mp4`), Signal Wash in Liquidline, CrazyDMT in BlueCrazyDMT (riot layer enabled) over `abstract5.mp4`, or Lumen Drift (particle-refraction glass blobs). Append `?bg=<mode>` to force one (e.g. `?bg=Lumen%20Drift`). A minimal loader covers the page until the winning engine has painted real frames (4s safety timeout).
 
 Signal Wash and CrazyDMT both mount into `#sw-bg`, which inherits the shared fade-in; the video-texture shader owns `#shader-canvas` and `<video id="src">`. Only the video-texture shader is wired to the Tweaks panel.
 
