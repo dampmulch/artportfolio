@@ -980,8 +980,8 @@
 <script src="assets/shaders/crazy-dmt-bg.js"></script>
 <script>
 (() => {
-  const MODES = ['video', 'Liquidline', 'BlueCrazyDMT'];
-  // ?bg=<mode> forces a background (e.g. ?bg=BlueCrazyDMT); otherwise lottery.
+  const MODES = ['video', 'Liquidline', 'CrazyDMT'];
+  // ?bg=<mode> forces a background (e.g. ?bg=CrazyDMT); otherwise lottery.
   const forced = new URLSearchParams(location.search).get('bg');
   const pick = MODES.includes(forced) ? forced
     : MODES[Math.floor(Math.random() * MODES.length)];
@@ -999,16 +999,34 @@
   host.style.display = 'block';
   const reveal = () => requestAnimationFrame(() =>
     requestAnimationFrame(() => setTimeout(window.__revealPage, 250)));
-  if (pick === 'BlueCrazyDMT') {
+  if (pick === 'CrazyDMT') {
     // CrazyDMT builds its own <video> + <canvas>; hosting it in #sw-bg inherits
     // the same opacity fade as the other engines.
-    // riotOn is the one param separating the kit's CrazyDMT preset from BlueCrazyDMT;
-    // it adds the colored block-riot layer that keeps this look distinct from the
-    // video-texture shader's monochrome line fields.
-    const dmt = CrazyDMT.attach(host, { preset: 'BlueCrazyDMT', src: 'assets/video/abstract5.mp4', riotOn: true });
+    // Random source per load from abstract2/3/5; ?vid=1..6 forces one.
+    const vid = new URLSearchParams(location.search).get('vid');
+    const POOL = ['2', '3', '5'];
+    const n = /^[1-6]$/.test(vid) ? vid : POOL[Math.floor(Math.random() * POOL.length)];
+    const dmt = CrazyDMT.attach(host, { preset: 'ModulateHueCrazyDMT', src: 'assets/video/abstract' + n + '.mp4' });
     if (!dmt) { window.__revealPage(); return; }   // no WebGL: don't strand the loader
     if (dmt.video.readyState >= 2) reveal();       // wait for real frames, not a black canvas
     else dmt.video.addEventListener('loadeddata', reveal, { once: true });
+    // At this preset's 0.1x speed the source loops every duration*10 seconds,
+    // and its last frame doesn't match its first — that jump reads as a stutter.
+    // Ease the veil up into the wrap and back out (~1.5s each side), so the
+    // seam becomes a slow blink instead.
+    const baseVeil = dmt.params.veil;
+    (function breathe() {
+      if (!dmt.canvas.isConnected) return;
+      const v = dmt.video, d = v.duration;
+      if (d && !v.paused) {
+        const win = 1.5 * (v.playbackRate || 0.1);      // ~1.5s wall-clock, in video-time
+        const edge = Math.min(v.currentTime, d - v.currentTime);
+        const x = Math.max(0, 1 - edge / win);
+        const ease = 0.5 - 0.5 * Math.cos(Math.PI * Math.min(1, x));
+        dmt.set('veil', baseVeil + (0.90 - baseVeil) * ease);
+      }
+      requestAnimationFrame(breathe);
+    })();
     return;
   }
   SignalWash.attach(host, { preset: pick, interact: 'full' });

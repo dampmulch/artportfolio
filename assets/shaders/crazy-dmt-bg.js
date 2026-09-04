@@ -2,16 +2,17 @@
    Usage:
      <script src="crazy-dmt-bg.js"></script>
      <script>CrazyDMT.attach(document.body, { src: 'abstract5.mp4' })</script>
-   Options: src (video url, required), preset ('BlueCrazyDMT' | 'CrazyDMT'),
+   Options: src (video url, required), preset ('ModulateHueCrazyDMT' | 'BlueCrazyDMT' | 'CrazyDMT'),
    plus any individual parameter override (e.g. { veil: 0.4, riotOn: true }).
    Returns { canvas, video, params, set(k,v), destroy() }. */
 (function(global){
   const PRESETS = {
-    BlueCrazyDMT: {"zoom":2.35,"hue":255,"sat":1.5,"smearOn":true,"smearAmt":0,"smearAngle":35,"posterOn":true,"posterLvl":4,"chromaOn":true,"chromaAmt":0.019,"displaceOn":true,"displaceAmt":0.15,"displaceScale":9.5,"sortOn":true,"sortThr":0.86,"glitchOn":true,"glitchAmt":0.45,"glitchBlock":14,"glitchRate":9,"glitchTear":0.45,"riotOn":false,"riotAmt":0.72,"riotHue":0.58,"riotBlock":19,"riotSpeed":25,"streaksOn":false,"streakAmt":0.8,"streakLen":0.12,"streakScale":5,"streakFlow":1,"linesOn":false,"linesDensity":90,"linesThick":0.4,"linesWarp":0.5,"linesScale":2.5,"linesFlow":0.6,"linesContrast":0.85,"bloomOn":true,"bloomThr":1,"bloomStr":1,"grainOn":true,"grainAmt":0.4,"scanOn":true,"scanAmt":1,"veil":0.09,"desat":0,"speed":0.55},
-    CrazyDMT: {"zoom":2.35,"hue":255,"sat":1.5,"smearOn":true,"smearAmt":0,"smearAngle":35,"posterOn":true,"posterLvl":4,"chromaOn":true,"chromaAmt":0.019,"displaceOn":true,"displaceAmt":0.15,"displaceScale":9.5,"sortOn":true,"sortThr":0.86,"glitchOn":true,"glitchAmt":0.45,"glitchBlock":14,"glitchRate":9,"glitchTear":0.45,"riotOn":true,"riotAmt":0.72,"riotHue":0.58,"riotBlock":19,"riotSpeed":25,"streaksOn":false,"streakAmt":0.8,"streakLen":0.12,"streakScale":5,"streakFlow":1,"linesOn":false,"linesDensity":90,"linesThick":0.4,"linesWarp":0.5,"linesScale":2.5,"linesFlow":0.6,"linesContrast":0.85,"bloomOn":true,"bloomThr":1,"bloomStr":1,"grainOn":true,"grainAmt":0.4,"scanOn":true,"scanAmt":1,"veil":0.09,"desat":0,"speed":0.55}
+    ModulateHueCrazyDMT: {"speed":0.1,"zoom":1,"hue":202,"sat":1.5,"smearOn":true,"smearAmt":0,"smearAngle":92,"posterOn":true,"posterLvl":4,"chromaOn":true,"chromaAmt":0.019,"displaceOn":true,"displaceAmt":0.15,"displaceScale":18,"sortOn":false,"sortThr":0.86,"glitchOn":false,"glitchAmt":0.9,"glitchBlock":14,"glitchRate":9,"glitchTear":0.45,"riotOn":false,"riotAmt":0.72,"riotHue":0.58,"riotBlock":19,"riotSpeed":25,"hueModOn":true,"hueModAmt":22,"hueModRate":0.04,"streaksOn":false,"streakAmt":0.8,"streakLen":0.12,"streakScale":5,"streakFlow":1,"linesOn":false,"linesDensity":90,"linesThick":0.4,"linesWarp":0.5,"linesScale":2.5,"linesFlow":0.6,"linesContrast":0.85,"bloomOn":true,"bloomThr":1,"bloomStr":2,"grainOn":true,"grainAmt":0.26,"scanOn":true,"scanAmt":0.14,"trail":0.95,"veil":0.29,"desat":0},
+    BlueCrazyDMT: {"zoom":2.35,"hue":255,"sat":1.5,"smearOn":true,"smearAmt":0,"smearAngle":35,"posterOn":true,"posterLvl":4,"chromaOn":true,"chromaAmt":0.019,"displaceOn":true,"displaceAmt":0.15,"displaceScale":9.5,"sortOn":true,"sortThr":0.86,"glitchOn":true,"glitchAmt":0.45,"glitchBlock":14,"glitchRate":9,"glitchTear":0.45,"riotOn":false,"riotAmt":0.72,"riotHue":0.58,"riotBlock":19,"riotSpeed":25,"streaksOn":false,"streakAmt":0.8,"streakLen":0.12,"streakScale":5,"streakFlow":1,"linesOn":false,"linesDensity":90,"linesThick":0.4,"linesWarp":0.5,"linesScale":2.5,"linesFlow":0.6,"linesContrast":0.85,"bloomOn":true,"bloomThr":1,"bloomStr":1,"grainOn":true,"grainAmt":0.4,"scanOn":true,"scanAmt":1,"trail":0.4,"veil":0.09,"desat":0,"speed":0.55},
+    CrazyDMT: {"zoom":2.35,"hue":255,"sat":1.5,"smearOn":true,"smearAmt":0,"smearAngle":35,"posterOn":true,"posterLvl":4,"chromaOn":true,"chromaAmt":0.019,"displaceOn":true,"displaceAmt":0.15,"displaceScale":9.5,"sortOn":true,"sortThr":0.86,"glitchOn":true,"glitchAmt":0.45,"glitchBlock":14,"glitchRate":9,"glitchTear":0.45,"riotOn":true,"riotAmt":0.72,"riotHue":0.58,"riotBlock":19,"riotSpeed":25,"streaksOn":false,"streakAmt":0.8,"streakLen":0.12,"streakScale":5,"streakFlow":1,"linesOn":false,"linesDensity":90,"linesThick":0.4,"linesWarp":0.5,"linesScale":2.5,"linesFlow":0.6,"linesContrast":0.85,"bloomOn":true,"bloomThr":1,"bloomStr":1,"grainOn":true,"grainAmt":0.4,"scanOn":true,"scanAmt":1,"trail":0.4,"veil":0.09,"desat":0,"speed":0.55}
   };
-  const FLOAT_KEYS = ["zoom","hue","sat","smearAmt","smearAngle","posterLvl","chromaAmt","displaceAmt","displaceScale","sortThr","glitchAmt","glitchBlock","glitchRate","glitchTear","riotAmt","riotHue","riotBlock","riotSpeed","streakAmt","streakLen","streakScale","streakFlow","linesDensity","linesThick","linesWarp","linesScale","linesFlow","linesContrast","grainAmt","scanAmt","veil","desat"];
-  const BOOL_KEYS = ["smearOn","posterOn","chromaOn","displaceOn","sortOn","glitchOn","riotOn","streaksOn","linesOn","grainOn","scanOn"];
+  const FLOAT_KEYS = ["zoom","hue","sat","smearAmt","smearAngle","posterLvl","chromaAmt","displaceAmt","displaceScale","sortThr","glitchAmt","glitchBlock","glitchRate","glitchTear","riotAmt","riotHue","riotBlock","riotSpeed","streakAmt","streakLen","streakScale","streakFlow","linesDensity","linesThick","linesWarp","linesScale","linesFlow","linesContrast","grainAmt","scanAmt","hueModAmt","hueModRate","veil","desat"];
+  const BOOL_KEYS = ["smearOn","posterOn","chromaOn","displaceOn","sortOn","glitchOn","riotOn","streaksOn","linesOn","grainOn","scanOn","hueModOn"];
 
   const VS = `attribute vec2 a_pos; varying vec2 v_uv;
     void main(){ v_uv = a_pos*0.5+0.5; gl_Position = vec4(a_pos,0.,1.); }`;
@@ -38,6 +39,7 @@
     uniform float u_grainOn, u_grainAmt;
     uniform float u_scanOn, u_scanAmt;
     uniform float u_veil, u_desat;
+    uniform float u_hueModOn, u_hueModAmt, u_hueModRate;
 
     // Random / noise
     float hash(vec2 p){ p = fract(p*vec2(123.34,456.21)); p += dot(p, p+45.32); return fract(p.x*p.y); }
@@ -212,7 +214,7 @@
 
       // --- Hue / saturation ---
       vec3 hsv = rgb2hsv(col);
-      hsv.x = fract(hsv.x + u_hue/360.0);
+      hsv.x = fract(hsv.x + u_hue/360.0 + u_hueModOn * (u_hueModAmt/360.0) * sin(u_time * u_hueModRate * 6.2831853));
       hsv.y *= u_sat;
       col = hsv2rgb(hsv);
 
@@ -297,6 +299,23 @@
       gl_FragColor = vec4(c, 1.0);
     }
   `;
+  const FS_MIX = `
+    precision highp float;
+    varying vec2 v_uv;
+    uniform sampler2D u_cur; uniform sampler2D u_prev;
+    uniform float u_k;
+    void main(){
+      vec3 c = texture2D(u_cur, v_uv).rgb;
+      vec3 p = texture2D(u_prev, v_uv).rgb;
+      gl_FragColor = vec4(mix(p, c, u_k), 1.0);
+    }
+  `;
+  const FS_BLIT = `
+    precision highp float;
+    varying vec2 v_uv;
+    uniform sampler2D u_tex;
+    void main(){ gl_FragColor = vec4(texture2D(u_tex, v_uv).rgb, 1.0); }
+  `;
   const FS_COMP = `
     precision highp float;
     varying vec2 v_uv;
@@ -311,7 +330,7 @@
 
   function attach(host, opts){
     opts = opts || {};
-    const base0 = PRESETS[opts.preset || 'BlueCrazyDMT'] || PRESETS.BlueCrazyDMT;
+    const base0 = PRESETS[opts.preset || 'ModulateHueCrazyDMT'] || PRESETS.ModulateHueCrazyDMT;
     const T = Object.assign({}, base0, opts);
     if (!opts.src) { console.warn('CrazyDMT: no src video given'); }
 
@@ -346,7 +365,8 @@
       return p;
     }
     const progMain = makeProg(VS, FS_MAIN), progBright = makeProg(VS, FS_BRIGHT),
-          progBlur = makeProg(VS, FS_BLUR), progComp = makeProg(VS, FS_COMP);
+          progBlur = makeProg(VS, FS_BLUR), progComp = makeProg(VS, FS_COMP),
+          progMix = makeProg(VS, FS_MIX), progBlit = makeProg(VS, FS_BLIT);
 
     const quad = gl.createBuffer();
     gl.bindBuffer(gl.ARRAY_BUFFER, quad);
@@ -378,7 +398,7 @@
       gl.bindFramebuffer(gl.FRAMEBUFFER, null);
       return { fbo, tex, w, h };
     }
-    let base = null, bA = null, bB = null;
+    let base = null, bA = null, bB = null, cur = null, p1 = null, p2 = null, histReady = false;
     const dpr = Math.min(global.devicePixelRatio || 1, 1.25);
     function resize(){
       const r = (host === document.body) ? { width: innerWidth, height: innerHeight } : host.getBoundingClientRect();
@@ -388,6 +408,7 @@
       base = makeFBO(w, hh);
       bA = makeFBO(Math.floor(w/2), Math.floor(hh/2));
       bB = makeFBO(Math.floor(w/2), Math.floor(hh/2));
+      cur = makeFBO(w, hh); p1 = makeFBO(w, hh); p2 = makeFBO(w, hh); histReady = false;
     }
     resize();
     addEventListener('resize', resize);
@@ -444,8 +465,8 @@
         gl.drawArrays(gl.TRIANGLES, 0, 6);
       }
 
-      gl.bindFramebuffer(gl.FRAMEBUFFER, null);
-      gl.viewport(0,0, canvas.width, canvas.height);
+      gl.bindFramebuffer(gl.FRAMEBUFFER, cur.fbo);
+      gl.viewport(0,0, cur.w, cur.h);
       gl.useProgram(progComp); bindAttrib(progComp);
       gl.activeTexture(gl.TEXTURE0);
       gl.bindTexture(gl.TEXTURE_2D, base.tex);
@@ -454,6 +475,31 @@
       gl.bindTexture(gl.TEXTURE_2D, T.bloomOn ? bA.tex : base.tex);
       gl.uniform1i(uL(progComp,'u_bloom'), 1);
       gl.uniform1f(uL(progComp,'u_str'), T.bloomOn ? T.bloomStr : 0);
+      gl.drawArrays(gl.TRIANGLES, 0, 6);
+
+      const trail = Math.min(Math.max(T.trail || 0, 0), 0.95);
+      let shown = cur.tex;
+      if (trail > 0.001) {
+        gl.bindFramebuffer(gl.FRAMEBUFFER, p2.fbo);
+        gl.viewport(0,0, p2.w, p2.h);
+        gl.useProgram(progMix); bindAttrib(progMix);
+        gl.activeTexture(gl.TEXTURE0); gl.bindTexture(gl.TEXTURE_2D, cur.tex);
+        gl.uniform1i(uL(progMix,'u_cur'), 0);
+        gl.activeTexture(gl.TEXTURE1); gl.bindTexture(gl.TEXTURE_2D, p1.tex);
+        gl.uniform1i(uL(progMix,'u_prev'), 1);
+        gl.uniform1f(uL(progMix,'u_k'), histReady ? (1.0 - trail) : 1.0);
+        gl.drawArrays(gl.TRIANGLES, 0, 6);
+        const t3 = p1; p1 = p2; p2 = t3;
+        histReady = true;
+        shown = p1.tex;
+      }
+
+      gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+      gl.viewport(0,0, canvas.width, canvas.height);
+      gl.useProgram(progBlit); bindAttrib(progBlit);
+      gl.activeTexture(gl.TEXTURE0);
+      gl.bindTexture(gl.TEXTURE_2D, shown);
+      gl.uniform1i(uL(progBlit,'u_tex'), 0);
       gl.drawArrays(gl.TRIANGLES, 0, 6);
       requestAnimationFrame(frame);
     }
