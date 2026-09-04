@@ -980,7 +980,7 @@
 <script src="assets/shaders/crazy-dmt-bg.js"></script>
 <script>
 (() => {
-  const MODES = ['video', 'Liquidline', 'Impasto', 'Ink Wash', 'BlueCrazyDMT'];
+  const MODES = ['video', 'Liquidline', 'Ink Wash', 'BlueCrazyDMT'];
   const pick = MODES[Math.floor(Math.random() * MODES.length)];
   window.__bgChoice = pick;
   window.__revealPage = () => {
@@ -999,7 +999,10 @@
   if (pick === 'BlueCrazyDMT') {
     // CrazyDMT builds its own <video> + <canvas>; hosting it in #sw-bg inherits
     // the same opacity fade as the other engines.
-    const dmt = CrazyDMT.attach(host, { preset: 'BlueCrazyDMT', src: 'assets/video/abstract5.mp4' });
+    // riotOn is the one param separating the kit's CrazyDMT preset from BlueCrazyDMT;
+    // it adds the colored block-riot layer that keeps this look distinct from the
+    // video-texture shader's monochrome line fields.
+    const dmt = CrazyDMT.attach(host, { preset: 'BlueCrazyDMT', src: 'assets/video/abstract5.mp4', riotOn: true });
     if (!dmt) { window.__revealPage(); return; }   // no WebGL: don't strand the loader
     if (dmt.video.readyState >= 2) reveal();       // wait for real frames, not a black canvas
     else dmt.video.addEventListener('loadeddata', reveal, { once: true });
