@@ -977,9 +977,10 @@
 })();
 </script>
 <script src="assets/signal-wash-bg.js"></script>
+<script src="assets/shaders/crazy-dmt-bg.js"></script>
 <script>
 (() => {
-  const MODES = ['video', 'Liquidline', 'Impasto', 'Ink Wash'];
+  const MODES = ['video', 'Liquidline', 'Impasto', 'Ink Wash', 'BlueCrazyDMT'];
   const pick = MODES[Math.floor(Math.random() * MODES.length)];
   window.__bgChoice = pick;
   window.__revealPage = () => {
@@ -993,8 +994,19 @@
   document.getElementById('shader-canvas').style.display = 'none';
   const host = document.getElementById('sw-bg');
   host.style.display = 'block';
+  const reveal = () => requestAnimationFrame(() =>
+    requestAnimationFrame(() => setTimeout(window.__revealPage, 250)));
+  if (pick === 'BlueCrazyDMT') {
+    // CrazyDMT builds its own <video> + <canvas>; hosting it in #sw-bg inherits
+    // the same opacity fade as the other engines.
+    const dmt = CrazyDMT.attach(host, { preset: 'BlueCrazyDMT', src: 'assets/video/abstract5.mp4' });
+    if (!dmt) { window.__revealPage(); return; }   // no WebGL: don't strand the loader
+    if (dmt.video.readyState >= 2) reveal();       // wait for real frames, not a black canvas
+    else dmt.video.addEventListener('loadeddata', reveal, { once: true });
+    return;
+  }
   SignalWash.attach(host, { preset: pick, interact: 'full' });
-  requestAnimationFrame(() => requestAnimationFrame(() => setTimeout(window.__revealPage, 250)));
+  reveal();
 })();
 </script>
 <script>
