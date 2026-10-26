@@ -391,7 +391,10 @@
       align-self: start;
       position: sticky; top: 76px;
     }
-    #case .case-index.is-hidden { visibility: hidden; }
+    #case .case-index.is-hidden { display: none; }
+    /* no index (single-heading study): revert to the centered column */
+    #case .case-inner:has(.case-index.is-hidden) { display: block; max-width: 720px; }
+    #case.is-full .case-inner:has(.case-index.is-hidden) { max-width: 860px; }
     #case .case-index button {
       background: none; border: 0; cursor: pointer;
       font-family: var(--font);
