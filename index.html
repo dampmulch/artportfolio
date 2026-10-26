@@ -3,6 +3,7 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
+<meta name="robots" content="noindex, nofollow, noarchive" />
 <title>Shehab. Design Portfolio</title>
 <link rel="icon" href="data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%2064%2064'%3E%3Crect%20width='64'%20height='64'%20rx='14'%20fill='%23000'/%3E%3Ctext%20x='32'%20y='46'%20font-family='Inter,sans-serif'%20font-size='40'%20font-weight='600'%20fill='%23f2f2ef'%20text-anchor='middle'%3ES%3C/text%3E%3C/svg%3E" />
 <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -298,12 +299,6 @@
   #case.is-full .case-expand .ico-in { display: block; }
   #case .case-close:hover, #case .case-expand:hover { background: rgba(255,255,255,0.18); border-color: rgba(255,255,255,0.32); }
   #case .case-close:focus-visible, #case .case-expand:focus-visible { outline: 2px solid rgba(242,242,239,0.7); outline-offset: 2px; }
-  #case .case-kicker {
-    font-size: 12px; font-weight: 600; letter-spacing: 0.18em; text-transform: uppercase;
-    color: var(--fg-dim); margin-bottom: 14px;
-    display: flex; align-items: center; gap: 10px;
-  }
-  #case .case-kicker::before { content: ''; width: 22px; height: 1px; background: var(--fg-dim); }
   #case h2 {
     margin: 0 0 10px;
     font-size: 44px; line-height: 1.05; letter-spacing: -0.03em;
@@ -377,6 +372,40 @@
   }
   #case .case-nav button:hover, #case .case-nav button:focus-visible { color: var(--fg); }
   #case .case-nav button:focus-visible { outline: 2px solid rgba(242,242,239,0.7); outline-offset: 4px; border-radius: 4px; }
+
+  /* ── Index rail: sticky section list on the right, wide panes only ── */
+  #case .case-index { display: none; }
+  #case { container-type: inline-size; }
+  @container (min-width: 1060px) {
+    #case .case-inner, #case.is-full .case-inner {
+      max-width: 992px;
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) 176px;
+      column-gap: 56px;
+      align-content: start;
+    }
+    #case .case-inner > :not(.case-index) { grid-column: 1; }
+    #case .case-index {
+      display: flex; flex-direction: column; gap: 2px;
+      grid-column: 2; grid-row: 1 / span 6;
+      align-self: start;
+      position: sticky; top: 76px;
+    }
+    #case .case-index.is-hidden { visibility: hidden; }
+    #case .case-index button {
+      background: none; border: 0; cursor: pointer;
+      font-family: var(--font);
+      font-size: 11px; font-weight: 600; letter-spacing: 0.14em; text-transform: uppercase;
+      color: var(--fg-faint);
+      text-align: left; line-height: 1.5;
+      padding: 6px 0 6px 14px;
+      border-left: 1px solid var(--rule);
+      transition: color 0.2s ease, border-left-color 0.2s ease;
+    }
+    #case .case-index button:hover { color: var(--fg-dim); }
+    #case .case-index button.active { color: var(--fg); border-left-color: var(--fg); }
+    #case .case-index button:focus-visible { outline: 2px solid rgba(242,242,239,0.7); outline-offset: 2px; border-radius: 4px; }
+  }
 
   /* Active project row while its case is open */
   .project a[aria-current="true"] { background: rgba(255,255,255,0.08); }
@@ -784,7 +813,7 @@
     <button class="case-close" id="case-close" type="button" aria-label="Close case study">×</button>
   </div>
   <div class="case-inner">
-    <div class="case-kicker" id="case-kicker"></div>
+    <nav class="case-index" id="case-index" aria-label="Case study index"></nav>
     <h2 id="case-title"></h2>
     <p class="case-sub" id="case-sub"></p>
     <div class="case-facts" id="case-facts"></div>
@@ -1570,7 +1599,6 @@
   // ── Case study content ──
   const CASES = {
     axios: {
-      kicker: 'Case Study · 01',
       title: 'Axios / AI Newsroom',
       sub: 'Elevating digital news delivery through AI‑powered tools for both consumers and newsrooms.',
       facts: [['Year','2022–24'],['Domain','News · Media'],['Focus','AI tooling']],
@@ -1582,55 +1610,60 @@
       ],
     },
     intuit: {
-      kicker: 'Case Study · 02',
       title: 'Intuit / QuickBooks AppConnect',
-      sub: 'Extending the utility of small businesses to help them compete with major retailers.',
+      sub: 'QuickBooks’ first no‑code automation platform, shipped as small businesses raced into e‑commerce.',
       facts: [['Year','2020'],['Domain','SMB · Fintech'],['Focus','Platform · Ecosystem']],
       img: 'assets/projects/intuit.jpg',
+      // Index groups: [label, first heading of the group]
+      groups: [
+        ['Background', 'Overview'],
+        ['Research', 'Framing the risk'],
+        ['Design', 'Requirements and flow'],
+        ['Systems', 'Designing the system, not the screens'],
+        ['Delivery', 'Partnering with engineering'],
+      ],
       body: [
-        ['Overview', 'I led the design and research of Intuit’s first consumer automation platform for QuickBooks. What was once a project to tap into the third-party developer market’s profits quickly became an effort to help small businesses enter the omnichannel during the COVID-19 pandemic.'],
-        ['Introduction', 'My team at the Intuit Developer Group (IDG) maintains the Intuit Design System, all API documentation for third-party QuickBooks developers, and internal automation efforts. IDG found that creating third-party solutions for QuickBooks is a worldwide, multi-million dollar industry, and Intuit wanted a piece of that pie. Our objective: build a consumer-friendly, no-code Integration Platform as a Service (IPaaS) to help QuickBooks customers manage and speed up monotonous tasks in their workflows.'],
-        ['What exactly is an IPaaS platform?', 'An IPaaS platform is an API-led, cloud-based architecture that allows two or more APIs to "communicate" with each other. If something happens in one API, the IPaaS triggers an action in the other. This is what we know as automation.'],
+        ['Overview', 'I led design and research for AppConnect, Intuit’s first consumer-facing automation platform for QuickBooks. What began as a play for the third-party integration market became something more urgent: giving small businesses, many pushed online overnight by the pandemic, a way to run omnichannel operations without hiring for it.'],
+        ['Context', 'The Intuit Developer Group owns the Intuit Design System, the third-party developer platform, and QuickBooks’ API documentation. Integrations built on those APIs were already a multi-million-dollar industry, and all of it was captured by outside developers. The mandate was to bring that value into the product itself: a no-code integration platform (IPaaS) that lets the apps in a customer’s stack trigger actions in one another, no engineer required.'],
         {img: 'assets/projects/intuit/whatisautomation.jpg', alt: 'Diagram explaining automation'},
-        ['What did we inherit?', 'In 2014, Intuit acquired itDuzzit, a Zapier-like startup, to bring automation to QuickBooks. I worked closely with co-founder Steve Mendoza, now Principal Software Engineer at Intuit, to understand his thinking behind itDuzzit, its system, and future vision. They had a proof of concept for consumer automation and a powerful backend we could leverage, but it was clear a small-business owner would have a hard time setting up their automation.'],
+        ['The starting point', 'Intuit had acquired itDuzzit, a Zapier-style automation startup, years earlier. I partnered with its co-founder, Steve Mendoza, to pressure-test what we could carry forward. The backend was powerful and proven; the experience layer wasn’t: setup assumed a developer’s mental model, and no business owner was going to survive it. That gap defined the design problem.'],
         {img: 'assets/projects/intuit/appconnectlegacy.jpg', cap: 'The legacy AppConnect experience we inherited.'},
-        ['Assumptions', 'Before diving deep into research, I worked with cross-functional partners to gain consensus on preliminary assumptions:'],
-        {list: ['Small businesses would confuse automation for artificial intelligence.', 'Small businesses haven’t spent much time or money investing in automation.', 'Small businesses are intimidated by automation.', 'Businesses spend too much time on repetitive admin work and want to speed it up.', 'Many small businesses were short-staffed or struggling from worldwide lockdown.']},
-        ['User research', 'I spoke to customers about their perception of automation and its implications for their business, and probed how each industry uses applications to run its processes. We learned small businesses know what automation is. What they didn’t know was how to get started. Some looked at tools like Zapier, but learning a new platform and paying for it introduced an opportunity cost.'],
-        [null, 'Small businesses were not intimidated by automation, though they didn’t see how it would work for their specific industry; automation is not one size fits all. We also confirmed that small businesses were hurting significantly: they couldn’t compete with Amazon and Walmart and knew they needed to diversify into e-commerce.'],
+        ['Framing the risk', 'Before committing research time, I aligned cross-functional partners on the assumptions we were implicitly betting on, so we knew exactly where being wrong would hurt:'],
+        {list: ['Small businesses would conflate automation with artificial intelligence.', 'They had invested little time or money in automation so far.', 'They found automation intimidating.', 'They were losing too many hours to repetitive admin work.', 'Many were short-staffed or struggling under lockdown.']},
+        ['Research', 'I ran generative interviews with owners across industries, probing how they perceived automation and how apps actually ran their operations. Most of our assumptions fell. Owners understood automation and weren’t intimidated by it. They just couldn’t see how it mapped to their specific industry, and tools like Zapier carried a real opportunity cost in learning curve and subscription fees.'],
+        [null, 'What the research confirmed, emphatically, was the pressure: they couldn’t match Amazon and Walmart on fulfillment, and they knew diversifying into e-commerce was no longer optional.'],
         {img: 'assets/projects/intuit/interviewcontext.jpg', cap: 'Interview context and themes.'},
-        ['How data flows through small businesses', 'We learned how data flows through a business and the industry-specific apps that appear (CRMs, POS systems), common business-standard apps like Google Sheets or Slack, and marketing tools. This research informed the logistical challenges small businesses face and helped prioritize what apps would make our MVP: Shopify, ShipStation, and others in the e-commerce stack.'],
+        ['Following the data through a business', 'Mapping how information moves through a small business surfaced the app landscape around QuickBooks: industry-specific tools like CRMs and POS systems, universal ones like Google Sheets and Slack, and the marketing stack. That map drove MVP prioritization: Shopify, ShipStation, and the rest of the e-commerce chain came first.'],
         {img: 'assets/projects/intuit/dataflow.jpg', alt: 'Data flow through a small business'},
-        ['Clarifying the problem', 'The problem wasn’t whether small businesses wanted automation or knew what it was. SMBs were unsure if automation was worth their time and met their specific contexts. Instead of replicating third-party services, we saw an opportunity to leverage our substantial third-party developer pool to create personalized automation for customers.'],
-        ['Competitive audit', 'In parallel with interviews, we audited primary and secondary suites of applications fitting the same use cases, to inspire requirements and ground design explorations.'],
+        ['Sharpening the problem', 'The question was never whether small businesses wanted automation. It was whether automation would meet them in their context. That reframing set the strategy: rather than replicate a horizontal tool, leverage Intuit’s third-party developer ecosystem to deliver automation personalized to each customer’s actual stack.'],
+        ['Competitive audit', 'In parallel, I audited the primary and adjacent automation suites to ground requirements and calibrate conventions worth keeping versus breaking.'],
         {img: 'assets/projects/intuit/zapierui.jpg', cap: 'Zapier commands the lead in consumer automation thanks to comforting copy and expectation-setting conventions.'},
         {img: 'assets/projects/intuit/moreui.jpg', cap: 'These apps include quick-start templates to lessen cognitive load in the creation process.'},
-        ['Requirements and user flow', 'I coordinated with my PM early to conceptualize feature requirements and advocated for engineering to join those meetings to voice feasibility concerns. Through these conversations we created a user flow for the ideal state, covering the creation and setup of automation.'],
+        ['Requirements and flow', 'I pulled product and engineering into requirements definition from the first conversation; feasibility concerns are cheap in week one and expensive at handoff. Together we mapped the ideal-state flow across automation creation and setup.'],
         {img: 'assets/projects/intuit/userflow.jpg', alt: 'User flow for automation creation'},
-        ['Design exploration', 'The main challenge was gauging how much modularity to introduce in the initial stages of the journey. The more small moving parts you show, the more arduous the task seems, but fail to present enough value and there’s no reason to adopt automation at all. Conversations at this stage revolved around showing the value proposition quickly while inspiring action.'],
+        ['The core design tension', 'Expose too many moving parts up front and automation feels like work; hide too much and there’s no visible reason to adopt it. Every exploration was a bet on where that line sat: show the value proposition before asking for effort.'],
         {img: 'assets/projects/intuit/wireframe1.jpg', alt: 'Early wireframe exploration'},
         {img: 'assets/projects/intuit/wireframe2.jpg', alt: 'Wireframe iteration'},
-        ['Content design', 'I worked with Christiana Gunn, a senior content designer on the QuickBooks team, to identify a conceptual model that helps users visualize automation. Through conversations with small business owners, we agreed automation is best described as "someone doing something for you," so the content reflects the feeling of the platform taking the wheel after setup.'],
+        ['Content and conceptual model', 'With Christiana Gunn, senior content designer on QuickBooks, I developed the conceptual model that anchors the experience. Owners consistently described what they wanted as "someone doing something for you," so the content is built around that feeling: once setup ends, the platform takes the wheel.'],
         {img: 'assets/projects/intuit/contentdesign1.jpg', alt: 'Content design exploration'},
         {img: 'assets/projects/intuit/contentdesign2.jpg', alt: 'Conceptual model copy'},
-        ['Showcasing possibilities', 'Some automation sequences are intentional, others are a discovered requirement. So I designed a component (with guidance from the QuickBooks Design System team) to show the "art of the possible."'],
+        ['Showcasing possibilities', 'Some automations are intentional; others are discovered. In partnership with the QuickBooks Design System team, I designed a quick-start component to put the art of the possible in front of users before they knew to ask for it.'],
         {img: 'assets/projects/intuit/quickstartcomponent.jpg', cap: 'Quick-start component showing the art of the possible.'},
-        ['Connecting apps flow', 'We segmented the automation creation and configuration process into separate screens to lower the chance of users feeling overwhelmed. After selecting action and trigger apps, the user connects them through an OAuth2 flow, familiar from "Sign in with Google" buttons. I also designed a flow for apps requiring a manually-entered secret key.'],
+        ['Connecting apps', 'Creation and configuration were deliberately segmented into separate screens to keep cognitive load flat. App connection rides on OAuth2, the pattern users already trust from "Sign in with Google," with a parallel flow I designed for apps that require a manually entered secret key.'],
         {img: 'assets/projects/intuit/oauth2screen.jpg', alt: 'OAuth2 connection flow'},
-        ['Systems design vs. UI design', 'The configuration screen looks different for every combination of apps. Designing every configuration component manually wouldn’t scale, so I designed the system for how partner apps’ custom integrations appear on the configuration screen. Partner apps create the integration commands themselves, because it’s in their best interest for QuickBooks to work well with their apps, a method already proven by the QuickBooks app store.'],
+        ['Designing the system, not the screens', 'The configuration screen is different for every pair of connected apps, and hand-designing each combination could never scale. So the deliverable wasn’t a screen; it was the system partners use to define their own configuration UI. Partner apps author their integration commands themselves; they have every incentive to work well with QuickBooks, a dynamic already proven by the QuickBooks app store.'],
         {img: 'assets/projects/intuit/config.jpg', alt: 'Configuration screen system'},
         {img: 'assets/projects/intuit/flexbox.jpg', cap: 'The flexible layout system behind partner-defined configuration.'},
-        ['Return state', 'After a user creates their first automation, we assume they understand the feature, so we replace the education component with a utility component to manage automation at a glance: turn it on/off, view logs, reconnect or switch auth tokens, and delete entirely.'],
+        ['Return state', 'Once a user has shipped their first automation, education has done its job. The dashboard trades the teaching component for a utility one: toggle automations, read logs, reconnect or swap auth tokens, and delete, all at a glance.'],
         {img: 'assets/projects/intuit/returnstate.jpg', alt: 'Dashboard return state'},
-        ['Working with developers', 'Design and development worked closely to voice feasibility concerns and create workarounds. For handoff I presented annotated wireframe process flows, with detailed mocks of how designs conform to QuickBooks design system paradigms.'],
+        ['Partnering with engineering', 'Design and engineering stayed in each other’s rooms throughout, surfacing constraints early and designing workarounds together rather than discovering them in review. Handoff shipped as annotated process flows with detailed mocks mapping every state to QuickBooks design system paradigms.'],
         {img: 'assets/projects/intuit/annotated.jpg', cap: 'Annotated handoff flows for engineering.'},
-        ['Things I would have done differently', 'There were opportunities for quick, valuable moments of delight, but executing automation mattered more than micro-interactions. One delighter I’d have loved to try: a "human hours saved" message, similar to Stripe’s Climate convention, reassuring users their automation was making an impact. It needed research time I unfortunately didn’t have.'],
+        ['Reflection', 'With more runway, I’d have pursued a "human hours saved" moment, a Stripe Climate-style reassurance that your automations are quietly paying for themselves. It stayed on the cut line because reliable execution mattered more than delight at launch, and that was the right call.'],
         {img: 'assets/projects/intuit/stripe.jpg', cap: 'Stripe Climate, the convention that inspired the idea.'},
-        ['Things I learned', 'Design systems people are your friends: extend a hand when you can’t find a component to fit your context. If they object, it’s probably for good reason. Research is non-negotiable: if generative research had been axed from the timeline, the product would have been a mess before it started. And your senior designers have seen some things. Think for yourself, but sometimes lean back and let their experience work for you and your users.'],
+        [null, 'The lasting takeaway from this work: on platform products, the leverage isn’t in any single screen. It’s in designing the rules other teams build with. The conceptual model, the partner framework, the configuration system: those are the artifacts that scale.'],
       ],
     },
     pru: {
-      kicker: 'Case Study · 03',
       title: 'Prudential / PGIM',
       sub: 'Taxonomy, design system, SIA payments flow, and PGIM usability across the finance giant.',
       facts: [['Year','2019–20'],['Domain','Finance'],['Focus','Design systems · UX']],
@@ -1652,7 +1685,6 @@
       ],
     },
     way: {
-      kicker: 'Case Study · 04',
       title: 'Wayfinding / NJIT',
       sub: "Enhancing wayfinding for NJIT’s Hillier College through eye‑tracking research.",
       facts: [['Year','2021'],['Domain','Research'],['Focus','Eye‑tracking · Environmental']],
@@ -1691,10 +1723,50 @@
   let lastTrigger = null;
   let suppressPreview = false;
 
+  // Index rail: grouped entries when the case defines groups, else one per
+  // heading. The entry nearest above the pane's upper third is active.
+  let indexTargets = [];
+  function updateIndexSpy() {
+    const index = document.getElementById('case-index');
+    if (!index || !indexTargets.length) return;
+    const line = casePane.getBoundingClientRect().top + casePane.clientHeight * 0.35;
+    let active = 0;
+    indexTargets.forEach((t, i) => { if (t.el.getBoundingClientRect().top <= line) active = i; });
+    [...index.children].forEach((b, i) => b.classList.toggle('active', i === active));
+  }
+  function buildIndex(body, c) {
+    const index = document.getElementById('case-index');
+    index.innerHTML = '';
+    const heads = [...body.querySelectorAll('h3')];
+    indexTargets = c.groups
+      ? c.groups.map(([label, headText]) => {
+          const el = heads.find(h => h.textContent === headText);
+          return el ? { label, el } : null;
+        }).filter(Boolean)
+      : heads.map(h => ({ label: h.textContent, el: h }));
+    index.classList.toggle('is-hidden', indexTargets.length < 2);
+    indexTargets.forEach(t => {
+      const b = document.createElement('button');
+      b.type = 'button';
+      b.textContent = t.label;
+      b.addEventListener('click', () => {
+        const y = casePane.scrollTop + t.el.getBoundingClientRect().top
+                - casePane.getBoundingClientRect().top - 96;
+        casePane.scrollTo({ top: Math.max(0, y), behavior: 'smooth' });
+      });
+      index.appendChild(b);
+    });
+    // lazy images shift the layout as they load; keep the active entry honest
+    body.querySelectorAll('img').forEach(im => {
+      if (!im.complete) im.addEventListener('load', updateIndexSpy, { once: true });
+    });
+    updateIndexSpy();
+  }
+  window.addEventListener('resize', updateIndexSpy);
+
   function renderCase(key) {
     const c = CASES[key];
     if (!c) return;
-    document.getElementById('case-kicker').textContent = c.kicker;
     document.getElementById('case-title').textContent = c.title;
     document.getElementById('case-sub').textContent = c.sub;
     const facts = document.getElementById('case-facts');
@@ -1729,6 +1801,7 @@
         body.appendChild(ul);
       }
     });
+    buildIndex(body, c);
     const i = ORDER.indexOf(key);
     const prevKey = ORDER[(i - 1 + ORDER.length) % ORDER.length];
     const nextKey = ORDER[(i + 1) % ORDER.length];
@@ -1763,6 +1836,7 @@
   }
 
   caseClose.addEventListener('click', closeCase);
+  casePane.addEventListener('scroll', updateIndexSpy, { passive: true });
   caseExpand.addEventListener('click', () => {
     const full = casePane.classList.toggle('is-full');
     caseExpand.setAttribute('aria-pressed', full ? 'true' : 'false');
